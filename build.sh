@@ -12,6 +12,7 @@ IDIR=$HERE/src
 function build(){
     echo "build"
     cd src/utilz && $COMPILER walker.go || exit 1
+    $COMPILER handy.go || exit 1
     $COMPILER stringset.go || exit 1
     cd $HERE/src/cmplr && $COMPILER -I $IDIR dag.go || exit 1
     $COMPILER -I $IDIR compiler.go || exit 1
@@ -24,6 +25,7 @@ function clean(){
     cd $HERE
     rm -rf src/utilz/walker.?
     rm -rf src/utilz/stringset.?
+    rm -rf src/utilz/handy.?
     rm -rf src/cmplr/dag.?
     rm -rf src/cmplr/compiler.?
     rm -rf src/start/main.?

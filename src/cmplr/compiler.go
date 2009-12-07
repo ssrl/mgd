@@ -7,8 +7,8 @@ package compiler
 import(
     "os";
     "container/vector";
-    "strings";
     "fmt";
+    "utilz/handy";
     "cmplr/dag";
     "path";
 )
@@ -36,7 +36,7 @@ func findCompiler(arch string) string{
         case "386"  : lookingFor = "8g";
     }
 
-    real := which(lookingFor);
+    real := handy.Which(lookingFor);
     if real == "" {
         fmt.Fprintf(os.Stderr,"[ERROR] could not find compiler\n");
         os.Exit(1);
@@ -53,7 +53,7 @@ func findLinker(arch string) string{
         case "386"  : lookingFor = "8l";
     }
 
-    real := which(lookingFor);
+    real := handy.Which(lookingFor);
     if real == "" {
         fmt.Fprintf(os.Stderr,"[ERROR] could not find linker\n");
         os.Exit(1);
@@ -105,33 +105,9 @@ func (c *Compiler) ForkCompile(pkgs *vector.Vector){
 
         fmt.Println("compiling:",pkg.Name);
 
-        stdExecute(argv);
+        handy.StdExecve(argv);
 
     }
-}
-
-func stdExecute(argv []string){
-
-    var fdesc []*os.File;
-
-    fdesc = make([]*os.File, 3);
-    fdesc[0] = os.Stdin;
-    fdesc[1] = os.Stdout;
-    fdesc[2] = os.Stderr;
-
-    pid, err := os.ForkExec(argv[0], argv, os.Environ(), "", fdesc);
-
-    if err != nil{
-        fmt.Fprintf(os.Stderr, "[ERROR] %s\n",err);
-        os.Exit(1);
-    }
-
-    wmsg, werr := os.Wait(pid, 0);
-
-    if werr != nil || wmsg.WaitStatus != 0 {
-        os.Exit(1);
-    }
-
 }
 
 func (c *Compiler) Link(pkgs *vector.Vector, output string){
@@ -169,51 +145,6 @@ func (c *Compiler) Link(pkgs *vector.Vector, output string){
 
     fmt.Println("linking  :",output);
 
-    stdExecute(argv);
+    handy.StdExecve(argv);
 
-}
-
-func which(cmd string) (string){
-
-    var abspath string;
-    var dir *os.Dir;
-    var err os.Error;
-
-    xpath := os.Getenv("PATH");
-    dirs  := strings.Split(xpath, ":", 0);
-
-    for i := range dirs {
-        abspath = path.Join(dirs[i], cmd);
-        dir, err = os.Stat(abspath);
-        if err == nil{
-            if dir.IsRegular(){
-                if isExecutable(dir.Uid, dir.Permission()) {
-                    return abspath;
-                }
-            }
-        }
-    }
-
-    return "";
-}
-
-func isExecutable(uid uint32, perms int) bool {
-
-    mode := 7;
-    amode := (perms & mode);
-    mode = mode << 6;
-    umode := (perms & mode) >> 6;
-
-
-    if amode == 7 || amode == 5 {
-        return true;
-    }
-
-    if int(uid) == os.Getuid() {
-        if umode == 7 || umode == 5 {
-            return true;
-        }
-    }
-
-    return false;
 }
