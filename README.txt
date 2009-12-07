@@ -1,0 +1,48 @@
+
+About:
+------------------------------------------------------------
+This program will hopefully make it easier to compile 
+source code in the go programming language.
+A dependency graph is constructed from imports, this
+is sorted with a topological sort to figure out legal
+compile order.
+
+
+Build:
+------------------------------------------------------------
+
+This should be as easy as running the script ./build.sh
+
+
+Install:
+------------------------------------------------------------
+
+Copy the file 'godag' somewhere it can be found ($PATH)
+
+
+Try it Out:
+------------------------------------------------------------
+
+You can try to compile the same source using the generated
+executable: godag
+
+
+$ ./godag src          # will compile source inside src
+$ ./godag -p src       # will print dependency info gathered
+$ ./godag -s src       # will print legal compile order
+$ ./godag -o name src  # will produce executable 'name' of
+                       # source-code inside src directory
+
+
+
+Philosophy (Babble?)
+------------------------------------------------------------
+
+Without a tool to figure out which order the source should
+be compiled, Makefiles are usually the result. Makefiles
+are static in nature, which make them a poor choice to handle
+a dynamic problem like a changing source tree. They also make
+it seem 'natural' or simple to create disorganized projects 
+in terms of directory-tree package-structure..
+
+-bjarneh
