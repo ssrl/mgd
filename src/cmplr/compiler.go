@@ -110,7 +110,7 @@ func (c *Compiler) ForkCompile(pkgs *vector.Vector){
     }
 }
 
-func (c *Compiler) Link(pkgs *vector.Vector, output string){
+func (c *Compiler) ForkLink(pkgs *vector.Vector, output string){
 
     gotMain := new(vector.Vector);
 

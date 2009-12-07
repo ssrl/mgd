@@ -89,7 +89,7 @@ func main(){
         cmplr.ForkCompile(sorted);
 
         if output != "" {
-            cmplr.Link(sorted, output);
+            cmplr.ForkLink(sorted, output);
         }
     }
 }
