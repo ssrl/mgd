@@ -172,7 +172,7 @@ func (p *Package) Visit(node interface{}) (v ast.Visitor){
             }
         default: // nothing to do if not BasicLit
     }
-    return v;
+    return p;
 }
 
 func stripQuotes(s string) string{
