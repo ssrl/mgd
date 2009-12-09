@@ -161,7 +161,7 @@ func (d *Dag) PrintInfo(){
 }
 
 
-func (p *Package) Visit(node interface{}) bool{
+func (p *Package) Visit(node interface{}) (v ast.Visitor){
 
     switch t := node.(type){
         case *ast.BasicLit:
@@ -172,7 +172,7 @@ func (p *Package) Visit(node interface{}) bool{
             }
         default: // nothing to do if not BasicLit
     }
-    return true;
+    return v;
 }
 
 func stripQuotes(s string) string{
