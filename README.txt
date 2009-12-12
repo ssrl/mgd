@@ -17,20 +17,20 @@ This should be as easy as running the script ./build.sh
 Install:
 ------------------------------------------------------------
 
-Copy the file 'godag' somewhere it can be found ($PATH)
+Copy the file: gd  somewhere it can be found ($PATH)
 
 
 Try it Out:
 ------------------------------------------------------------
 
 You can try to compile the same source using the generated
-executable: godag
+executable: gd
 
 
-$ ./godag src          # will compile source inside src
-$ ./godag -p src       # will print dependency info gathered
-$ ./godag -s src       # will print legal compile order
-$ ./godag -o name src  # will produce executable 'name' of
+$ ./gd src          # will compile source inside src
+$ ./gd -p src       # will print dependency info gathered
+$ ./gd -s src       # will print legal compile order
+$ ./gd -o name src  # will produce executable 'name' of
                        # source-code inside src directory
 
 

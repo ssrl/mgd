@@ -38,8 +38,7 @@ func findCompiler(arch string) string{
 
     real := handy.Which(lookingFor);
     if real == "" {
-        fmt.Fprintf(os.Stderr,"[ERROR] could not find compiler\n");
-        os.Exit(1);
+        die("[ERROR] could not find compiler\n");
     }
     return real;
 }
@@ -55,8 +54,7 @@ func findLinker(arch string) string{
 
     real := handy.Which(lookingFor);
     if real == "" {
-        fmt.Fprintf(os.Stderr,"[ERROR] could not find linker\n");
-        os.Exit(1);
+        die("[ERROR] could not find linker\n");
     }
     return real;
 }
@@ -72,9 +70,7 @@ func archNsuffix(arch string)(a, s string){
         case "arm"  : s = ".5";
         case "arm64": s = ".6";
         case "386"  : s = ".8";
-        default:
-            fmt.Fprintf(os.Stderr,"[ERROR] unknown architecture: %s\n",a);
-            os.Exit(1);
+        default     : die("[ERROR] unknown architecture: %s\n",a);
     }
 
     return a, s;
@@ -122,13 +118,11 @@ func (c *Compiler) ForkLink(pkgs *vector.Vector, output string){
     }
 
     if gotMain.Len() == 0 {
-        fmt.Fprintf(os.Stderr,"[ERROR] (linking) no main package found\n");
-        os.Exit(1);
+        die("[ERROR] (linking) no main package found\n");
     }
 
     if gotMain.Len() > 1 {
-        fmt.Fprintf(os.Stderr,"[ERROR] (linking) more than one main package found\n");
-        os.Exit(1);
+        die("[ERROR] (linking) more than one main package found\n");
     }
 
     pkg, _ := gotMain.Pop().(*dag.Package);
@@ -147,4 +141,9 @@ func (c *Compiler) ForkLink(pkgs *vector.Vector, output string){
 
     handy.StdExecve(argv);
 
+}
+
+func die(strfmt string, v ...){
+    fmt.Fprintf(os.Stderr, strfmt, v);
+    os.Exit(1);
 }
