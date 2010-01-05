@@ -118,7 +118,7 @@ func findFiles(pathname string) *vector.StringVector{
 
 func printHelp(){
     var helpMSG string =`
-  usage: godag [OPTIONS] src-directory
+  usage: gd [OPTIONS] src-directory
 
   options:
 
