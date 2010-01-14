@@ -4,7 +4,6 @@
 
 package gopt
 
-
 /*
 
 Not too happy with the flag package provided
