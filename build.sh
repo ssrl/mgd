@@ -14,6 +14,7 @@ function build(){
     cd src/utilz && $COMPILER walker.go || exit 1
     $COMPILER handy.go || exit 1
     $COMPILER stringset.go || exit 1
+    cd $HERE/src/parse/ && $COMPILER option.go gopt.go || exit 1
     cd $HERE/src/cmplr && $COMPILER -I $IDIR dag.go || exit 1
     $COMPILER -I $IDIR compiler.go || exit 1
     cd $HERE/src/start && $COMPILER -I $IDIR main.go || exit 1
@@ -28,6 +29,8 @@ function clean(){
     rm -rf src/utilz/handy.?
     rm -rf src/cmplr/dag.?
     rm -rf src/cmplr/compiler.?
+    rm -rf src/parse/gopt.?
+    rm -rf src/parse/option.?
     rm -rf src/start/main.?
     rm -rf gd
 }

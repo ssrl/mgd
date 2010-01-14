@@ -8,32 +8,16 @@ import(
     "os";
 	"fmt";
 	"path";
+    "parse/gopt";
 	"utilz/walker";
     "cmplr/compiler";
     "cmplr/dag";
 	"container/vector";
 	"strings";
-    "flag";
 )
 
-var helpflag, versionflag, tprint, dbprint bool;
-var arch, output string;
 
 func init(){
-
-    flag.Usage = printHelp;
-    flag.BoolVar(&helpflag, "h", false, "print help");
-    flag.BoolVar(&helpflag, "help", false, "print help");
-    flag.BoolVar(&versionflag, "v", false, "print version");
-    flag.BoolVar(&versionflag, "version", false, "print version");
-    flag.BoolVar(&tprint, "s", false, "print legal compile order");
-    flag.BoolVar(&tprint, "sort", false, "print legal compile order");
-    flag.BoolVar(&dbprint,"p", false, "print collected info");
-    flag.BoolVar(&dbprint,"print", false, "print collected info");
-    flag.StringVar(&arch,"a", "", "architecture");
-    flag.StringVar(&arch,"arch", "", "architecture");
-    flag.StringVar(&output,"o", "", "output");
-    flag.StringVar(&output,"output", "", "output");
 
     // override IncludeFile to make walker pick up only .go files
     walker.IncludeFile = func(s string)bool{
@@ -57,19 +41,34 @@ func main(){
 
     var files *vector.StringVector;
 
-    flag.Parse();
+    var arch, output string;
 
-    if helpflag    { printHelp(); os.Exit(0); }
-    if versionflag { printVersion(); os.Exit(0); }
+    getopt := gopt.New();
 
-    for i := 0; i < flag.NArg() ; i++ {
+    getopt.BoolOption("-h -help --help help");
+    getopt.BoolOption("-v -version --version version");
+    getopt.BoolOption("-s -sort --sort sort");
+    getopt.BoolOption("-p -print --print");
+    getopt.StringOption("-a -arch --arch -arch= --arch=");
+    getopt.StringOption("-o -output --output -output= --output=");
 
-        files = findFiles(flag.Arg(i));
+    args := getopt.Parse(os.Args[1:]);
+
+    if getopt.IsSet("-arch"){ arch = getopt.Get("-a"); }
+    if getopt.IsSet("-output"){ output = getopt.Get("-o"); }
+
+
+    if getopt.IsSet("-help") { printHelp(); os.Exit(0); }
+    if getopt.IsSet("-version") { printVersion(); os.Exit(0); }
+
+    for i := 0; i < len(args) ; i++ {
+
+        files = findFiles(args[i]);
 
         dgrph := dag.New();
-        dgrph.Parse(flag.Arg(i), files);
+        dgrph.Parse(args[i], files);
 
-        if dbprint {
+        if getopt.IsSet("-print") {
             dgrph.PrintInfo();
             os.Exit(0);
         }
@@ -77,7 +76,7 @@ func main(){
         dgrph.GraphBuilder();
         sorted := dgrph.Topsort();
 
-        if tprint {
+        if getopt.IsSet("-sort") {
             for pkg := range sorted.Iter() {
                 rpkg, _ := pkg.(*dag.Package);
                 fmt.Printf("%s\n", rpkg.Name);
@@ -85,7 +84,7 @@ func main(){
             os.Exit(0);
         }
 
-        cmplr  := compiler.New(flag.Arg(i), arch);
+        cmplr  := compiler.New(args[i], arch);
         cmplr.ForkCompile(sorted);
 
         if output != "" {
