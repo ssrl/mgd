@@ -31,7 +31,7 @@ $ ./gd src          # will compile source inside src
 $ ./gd -p src       # will print dependency info gathered
 $ ./gd -s src       # will print legal compile order
 $ ./gd -o name src  # will produce executable 'name' of
-                       # source-code inside src directory
+                    # source-code inside src directory
 
 
 
