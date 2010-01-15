@@ -42,7 +42,9 @@ Without a tool to figure out which order the source should
 be compiled, Makefiles are usually the result. Makefiles
 are static in nature, which make them a poor choice to handle
 a dynamic problem like a changing source tree. They also make
-it seem 'natural' or simple to create disorganized projects 
-in terms of directory-tree package-structure..
+flat structures quite common, which is far less intuitive
+than a directory-tree package-structure, like to I dare say
+the word Java or C# :-)
+
 
 -bjarneh
