@@ -53,13 +53,13 @@ func (d *Dag) Parse(root string, sv *vector.StringVector){
         tree := getSyntaxTreeOrDie(e);
         dir, _ := path.Split(e);
         unroot := dir[len(root):len(dir)];
-        pkgname := path.Join(unroot, tree.Name.Value);
+        pkgname := path.Join(unroot, tree.Name.Obj.Name);
 
         _, ok := d.pkgs[pkgname];
         if ! ok {
             d.pkgs[pkgname] = newPackage();
             d.pkgs[pkgname].Name = pkgname;
-            d.pkgs[pkgname].ShortName = tree.Name.Value;
+            d.pkgs[pkgname].ShortName = tree.Name.Obj.Name;
         }
 
         ast.Walk( d.pkgs[pkgname], tree );
