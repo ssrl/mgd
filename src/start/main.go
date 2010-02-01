@@ -8,11 +8,11 @@ import(
     "os";
 	"fmt";
 	"path";
-    "parse/gopt";
 	"utilz/walker";
     "cmplr/compiler";
     "cmplr/dag";
 	"container/vector";
+    "parse/gopt";
 	"strings";
 )
 

@@ -18,7 +18,7 @@ function build(){
     cd $HERE/src/cmplr && $COMPILER -I $IDIR dag.go || exit 1
     $COMPILER -I $IDIR compiler.go || exit 1
     cd $HERE/src/start && $COMPILER -I $IDIR main.go || exit 1
-    cd $HERE && $LINKY -o gd src/start/main.? || exit 1
+    cd $HERE && $LINKY -o gd -L src src/start/main.? || exit 1
 }
 
 function clean(){

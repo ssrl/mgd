@@ -182,7 +182,7 @@ func stripQuotes(s string) string{
 
 
 func getSyntaxTreeOrDie(file string) (*ast.File){
-    absSynTree, err := parser.ParseFile(file, nil, parser.ImportsOnly);
+    absSynTree, err := parser.ParseFile(file, nil, nil, parser.ImportsOnly);
     if err != nil {
         fmt.Fprintf(os.Stderr, "%s\n", err);
         os.Exit(1);

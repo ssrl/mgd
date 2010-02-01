@@ -130,17 +130,18 @@ func (c *Compiler) ForkLink(pkgs *vector.Vector, output string){
     linker := findLinker(c.arch);
     compiled := path.Join(c.root, pkg.Name) + c.suffix;
 
-    argv := make([]string, 4);
+    argv := make([]string, 6);
     i    := 0;
     argv[i] = linker; i++;
     argv[i] = "-o"; i++;
     argv[i] = output; i++;
+    argv[i] = "-L"; i++;
+    argv[i] = c.root; i++;
     argv[i] = compiled; i++;
 
     fmt.Println("linking  :",output);
 
     handy.StdExecve(argv);
-
 }
 
 func die(strfmt string, v ...){
