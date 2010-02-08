@@ -30,6 +30,9 @@ func init(){
         return dirname[0] != '.';
     };
 
+}
+
+func gotRoot(){
     if os.Getenv("GOROOT") == "" {
         fmt.Fprintf(os.Stderr,"[ERROR] missing GOROOT\n");
         os.Exit(1);
@@ -54,12 +57,13 @@ func main(){
 
     args := getopt.Parse(os.Args[1:]);
 
-    if getopt.IsSet("-arch"){ arch = getopt.Get("-a"); }
-    if getopt.IsSet("-output"){ output = getopt.Get("-o"); }
-
-
     if getopt.IsSet("-help") { printHelp(); os.Exit(0); }
     if getopt.IsSet("-version") { printVersion(); os.Exit(0); }
+
+    gotRoot();//?
+
+    if getopt.IsSet("-arch"){ arch = getopt.Get("-a"); }
+    if getopt.IsSet("-output"){ output = getopt.Get("-o"); }
 
     for i := 0; i < len(args) ; i++ {
 
