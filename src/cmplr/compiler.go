@@ -144,7 +144,7 @@ func (c *Compiler) ForkLink(pkgs *vector.Vector, output string){
     handy.StdExecve(argv);
 }
 
-func die(strfmt string, v ...){
+func die(strfmt string, v ...interface{}){
     fmt.Fprintf(os.Stderr, strfmt, v);
     os.Exit(1);
 }

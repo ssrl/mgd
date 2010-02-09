@@ -77,12 +77,12 @@ func (g *GetOpt) isOption(o string) (Option) {
     return nil;
 }
 
-func stop(msg string, format ...){
+func stop(msg string, format ...interface{}){
     fmt.Fprintf(os.Stderr, msg, format);
     os.Exit(1);
 }
 
-func err(msg string, format ...){
+func err(msg string, format ...interface{}){
     fmt.Fprintf(os.Stderr, msg, format);
 }
 
