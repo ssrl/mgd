@@ -14,16 +14,17 @@ import(
 )
 
 
-
 type Compiler struct{
     root, arch, suffix, executable string;
+    dryrun bool;
 }
 
-func New(root, arch string) *Compiler{
+func New(root, arch string, dryrun bool) *Compiler{
     c      := new(Compiler);
     c.root  = root;
     c.arch, c.suffix = archNsuffix(arch);
     c.executable     = findCompiler(c.arch);
+    c.dryrun = dryrun;
     return c;
 }
 
@@ -64,6 +65,8 @@ func archNsuffix(arch string)(a, s string){
 
     if arch == "" {
         a = os.Getenv("GOARCH");
+    }else{
+        a = arch;
     }
 
     switch a {
@@ -99,10 +102,12 @@ func (c *Compiler) ForkCompile(pkgs *vector.Vector){
             i++;
         }
 
-        fmt.Println("compiling:",pkg.Name);
-
-        handy.StdExecve(argv);
-
+        if c.dryrun {
+            dryRun(argv);
+        }else{
+            fmt.Println("compiling:",pkg.Name);
+            handy.StdExecve(argv);
+        }
     }
 }
 
@@ -139,12 +144,26 @@ func (c *Compiler) ForkLink(pkgs *vector.Vector, output string){
     argv[i] = c.root; i++;
     argv[i] = compiled; i++;
 
-    fmt.Println("linking  :",output);
-
-    handy.StdExecve(argv);
+    if c.dryrun {
+        dryRun(argv);
+    }else{
+        fmt.Println("linking  :",output);
+        handy.StdExecve(argv);
+    }
 }
 
 func die(strfmt string, v ...interface{}){
     fmt.Fprintf(os.Stderr, strfmt, v);
     os.Exit(1);
+}
+
+
+func dryRun(argv []string){
+    var cmd string;
+
+    for i := 0; i < len(argv); i++ {
+        cmd = fmt.Sprintf("%s %s ", cmd, argv[i]);
+    }
+
+    fmt.Printf("%s || exit 1\n",cmd);
 }

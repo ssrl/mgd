@@ -45,6 +45,7 @@ func main(){
     var files *vector.StringVector;
 
     var arch, output string;
+    var dryrun bool;
 
     getopt := gopt.New();
 
@@ -52,6 +53,7 @@ func main(){
     getopt.BoolOption("-v -version --version version");
     getopt.BoolOption("-s -sort --sort sort");
     getopt.BoolOption("-p -print --print");
+    getopt.BoolOption("-d -dryrun --dryrun");
     getopt.StringOption("-a -arch --arch -arch= --arch=");
     getopt.StringOption("-o -output --output -output= --output=");
 
@@ -59,6 +61,7 @@ func main(){
 
     if getopt.IsSet("-help") { printHelp(); os.Exit(0); }
     if getopt.IsSet("-version") { printVersion(); os.Exit(0); }
+    if getopt.IsSet("-dryrun"){ dryrun = true; }
 
     gotRoot();//?
 
@@ -88,7 +91,7 @@ func main(){
             os.Exit(0);
         }
 
-        cmplr  := compiler.New(args[i], arch);
+        cmplr  := compiler.New(args[i], arch, dryrun);
         cmplr.ForkCompile(sorted);
 
         if output != "" {
@@ -131,6 +134,7 @@ func printHelp(){
   -s --sort        print legal compile order
   -o --output      link to produce program
   -a --arch        architecture (arm64,arm,386)
+  -d --dryrun      print what gd would do (stdout)
     `;
 
     fmt.Println(helpMSG);
