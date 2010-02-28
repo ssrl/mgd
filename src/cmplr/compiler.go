@@ -33,7 +33,7 @@ func findCompiler(arch string) string{
     var lookingFor string;
     switch arch {
         case "arm"  : lookingFor = "5g";
-        case "arm64": lookingFor = "6g";
+        case "amd64": lookingFor = "6g";
         case "386"  : lookingFor = "8g";
     }
 
@@ -49,7 +49,7 @@ func findLinker(arch string) string{
     var lookingFor string;
     switch arch {
         case "arm"  : lookingFor = "5l";
-        case "arm64": lookingFor = "6l";
+        case "amd64": lookingFor = "6l";
         case "386"  : lookingFor = "8l";
     }
 
@@ -71,7 +71,7 @@ func archNsuffix(arch string)(a, s string){
 
     switch a {
         case "arm"  : s = ".5";
-        case "arm64": s = ".6";
+        case "amd64": s = ".6";
         case "386"  : s = ".8";
         default     : die("[ERROR] unknown architecture: %s\n",a);
     }

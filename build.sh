@@ -5,7 +5,10 @@
 
 COMPILER=""
 LINKY=""
-HERE=$(dirname $(readlink -f $0))
+D=`dirname "$0"`
+B=`basename "$0"`
+FULL="`cd \"$D\" 2>/dev/null && pwd || echo \"$D\"`/$B"
+HERE=$(dirname "$FULL")
 IDIR=$HERE/src
 
 
@@ -14,7 +17,7 @@ function build(){
     cd src/utilz && $COMPILER walker.go || exit 1
     $COMPILER handy.go || exit 1
     $COMPILER stringset.go || exit 1
-    cd $HERE/src/parse && $COMPILER -o gopt.8 option.go gopt.go || exit 1
+    cd $HERE/src/parse && $COMPILER -o gopt.$OBJ option.go gopt.go || exit 1
     cd $HERE/src/cmplr && $COMPILER -I $IDIR dag.go || exit 1
     $COMPILER -I $IDIR compiler.go || exit 1
     cd $HERE/src/start && $COMPILER -I $IDIR main.go || exit 1
@@ -64,17 +67,20 @@ case "$GOARCH" in
     '386')
     COMPILER="8g"
     LINKY="8l"
+	OBJ="8"
     ;;
     'arm')
     COMPILER="5g"
     LINKY="5l"
+	OBJ="5"
     ;;
-    'arm64')
+    'amd64')
     COMPILER="6g"
     LINKY="6l"
+	OBJ="6"
     ;;
     *)
-    echo "architecture not: 'arm64' '386' 'arm'"
+    echo "architecture not: 'amd64' '386' 'arm'"
     echo "architecture was ${GOARC}"
     exit 1
     ;;

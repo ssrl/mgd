@@ -133,7 +133,7 @@ func printHelp(){
   -p --print       print package info collected
   -s --sort        print legal compile order
   -o --output      link to produce program
-  -a --arch        architecture (arm64,arm,386)
+  -a --arch        architecture (amd64,arm,386)
   -d --dryrun      print what gd would do (stdout)
     `;
 
