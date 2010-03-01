@@ -43,7 +43,7 @@ be compiled, Makefiles are usually the result. Makefiles
 are static in nature, which make them a poor choice to handle
 a dynamic problem like a changing source tree. They also make
 flat structures quite common, which is far less intuitive
-than a directory-tree package-structure, like to I dare say
+than a directory-tree package-structure, like; do I dare say
 the word Java or C# :-)
 
 
