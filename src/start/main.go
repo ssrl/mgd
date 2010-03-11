@@ -134,6 +134,10 @@ func rm865(args []string){
 
     };
 
+    if len(args) == 0 {
+        fmt.Println("which directory do you want cleaned out?");
+    }
+
     for i := 0; i < len(args); i++ {
 
         okDirOrDie(args[i]);
