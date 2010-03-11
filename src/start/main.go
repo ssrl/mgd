@@ -50,6 +50,7 @@ func main(){
     getopt := gopt.New();
 
     getopt.BoolOption("-h -help --help help");
+    getopt.BoolOption("-c -clean --clean clean");
     getopt.BoolOption("-v -version --version version");
     getopt.BoolOption("-s -sort --sort sort");
     getopt.BoolOption("-p -print --print");
@@ -61,6 +62,7 @@ func main(){
 
     if getopt.IsSet("-help") { printHelp(); os.Exit(0); }
     if getopt.IsSet("-version") { printVersion(); os.Exit(0); }
+    if getopt.IsSet("-clean") { rm865(args); os.Exit(0); }
     if getopt.IsSet("-dryrun"){ dryrun = true; }
 
     gotRoot();//?
@@ -101,10 +103,14 @@ func main(){
 }
 
 func findFiles(pathname string) *vector.StringVector{
+    okDirOrDie(pathname);
+    return walker.PathWalk(path.Clean(pathname));
+}
+
+func okDirOrDie(pathname string){
 
     var dir *os.Dir;
     var staterr  os.Error;
-    var files *vector.StringVector;
 
     dir, staterr = os.Stat(pathname);
 
@@ -112,14 +118,37 @@ func findFiles(pathname string) *vector.StringVector{
         fmt.Fprintf(os.Stderr,"[ERROR] %s\n", staterr);
         os.Exit(1);
     }else if ! dir.IsDirectory() {
-        fmt.Fprintf(os.Stderr,"[ERROR] %s: is not a directory\n",
-                    pathname);
+        fmt.Fprintf(os.Stderr,"[ERROR] %s: is not a directory\n", pathname);
         os.Exit(1);
-    }else{
-        files = walker.PathWalk(path.Clean(pathname));
+    }
+}
+
+func rm865(args []string){
+
+    // override IncludeFile to make walker pick up only .[865] files
+    walker.IncludeFile = func(s string)bool{
+        return strings.HasSuffix(s,".8") ||
+               strings.HasSuffix(s,".6") ||
+               strings.HasSuffix(s,".5") ||
+               strings.HasSuffix(s,".a");
+
+    };
+
+    for i := 0; i < len(args); i++ {
+
+        okDirOrDie(args[i]);
+
+        compiled := walker.PathWalk(path.Clean(args[i]));
+
+        for s := range compiled.Iter() {
+            fmt.Printf("rm: %s\n", s);
+            e := os.Remove(s);
+            if e != nil {
+                fmt.Fprintf(os.Stderr,"[ERROR] could not delete file: %s\n",s);
+            }
+        }
     }
 
-    return files;
 }
 
 func printHelp(){
