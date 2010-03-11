@@ -164,6 +164,7 @@ func printHelp(){
   -o --output      link to produce program
   -a --arch        architecture (amd64,arm,386)
   -d --dryrun      print what gd would do (stdout)
+  -c --clean       rm *.[a865] from src-directory
     `;
 
     fmt.Println(helpMSG);
