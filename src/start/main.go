@@ -40,13 +40,19 @@ func gotRoot(){
     }
 }
 
+func findTestFilesAlso(){
+    // override IncludeFile to make walker pick up only .go files
+    walker.IncludeFile = func(s string)bool{
+        return strings.HasSuffix(s,".go");
+    };
+}
 
 func main(){
 
     var files *vector.StringVector;
 
     var arch, output string;
-    var dryrun bool;
+    var dryrun, test bool;
 
     getopt := gopt.New();
 
@@ -56,6 +62,7 @@ func main(){
     getopt.BoolOption("-s -sort --sort sort");
     getopt.BoolOption("-p -print --print");
     getopt.BoolOption("-d -dryrun --dryrun");
+    getopt.BoolOption("-t -test --test");
     getopt.StringOption("-a -arch --arch -arch= --arch=");
     getopt.StringOption("-o -output --output -output= --output=");
 
@@ -65,6 +72,10 @@ func main(){
     if getopt.IsSet("-version") { printVersion(); os.Exit(0); }
     if getopt.IsSet("-clean") { rm865(args); os.Exit(0); }
     if getopt.IsSet("-dryrun"){ dryrun = true; }
+    if getopt.IsSet("-test"){
+        test = true;
+        findTestFilesAlso();
+    }
 
     gotRoot();//?
 
@@ -99,6 +110,10 @@ func main(){
 
         if output != "" {
             cmplr.ForkLink(sorted, output);
+        }
+
+        if test {
+            dgrph.MakeMainTest();
         }
     }
 }
