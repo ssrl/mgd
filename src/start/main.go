@@ -53,7 +53,7 @@ func main(){
 
     var files *vector.StringVector;
 
-    var arch, output string;
+    var arch, output, srcdir string;
     var dryrun, test bool;
 
     getopt := gopt.New();
@@ -84,12 +84,25 @@ func main(){
     if getopt.IsSet("-arch"){ arch = getopt.Get("-a"); }
     if getopt.IsSet("-output"){ output = getopt.Get("-o"); }
 
-    for i := 0; i < len(args) ; i++ {
 
-        files = findFiles(args[i]);
+    if len(args) == 0{
+        srcdir = "src";
+    }else{
+        if len(args) > 1 {
+            fmt.Fprintf(os.Stderr,"[WARNING] len(input directories) > 1\n");
+        }
+        srcdir = args[0];
+    }
+
+
+///     for i := 0; i < len(args) ; i++ {
+
+///         files = findFiles(args[i]);
+        files = findFiles(srcdir);
 
         dgrph := dag.New();
-        dgrph.Parse(args[i], files);
+///         dgrph.Parse(args[i], files);
+        dgrph.Parse(srcdir, files);
 
         if getopt.IsSet("-print") {
             dgrph.PrintInfo();
@@ -107,20 +120,23 @@ func main(){
             os.Exit(0);
         }
 
-        cmplr  := compiler.New(args[i], arch, dryrun);
+///         cmplr  := compiler.New(args[i], arch, dryrun);
+        cmplr  := compiler.New(srcdir, arch, dryrun);
         cmplr.ForkCompile(sorted);
+
+        if test {
+///             testMain := dgrph.MakeMainTest(args[i]);
+            testMain := dgrph.MakeMainTest(srcdir);
+            cmplr.ForkCompile(testMain);
+            cmplr.ForkLink(testMain, "gdtest");
+            cmplr.DeletePackages(testMain);
+        }
 
         if output != "" {
             cmplr.ForkLink(sorted, output);
         }
 
-        if test {
-            testMain := dgrph.MakeMainTest(args[i]);
-            cmplr.ForkCompile(testMain);
-            cmplr.ForkLink(testMain, "gdtest");
-///             os.Unlink(path.Join(args[i],
-        }
-    }
+///     }
 }
 
 func findFiles(pathname string) *vector.StringVector{

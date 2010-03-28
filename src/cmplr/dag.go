@@ -159,7 +159,7 @@ func (d *Dag) MakeMainTest(root string) *vector.Vector{
     sbTotal.Add("testing.Main(tests);\n");
     sbTotal.Add("testing.RunBenchmarks(benchmarks);\n}\n\n");
 
-    testtmpfile = fmt.Sprintf("%stmp%d.go", addSeparatorPath(root), time.Seconds());
+    testtmpfile = fmt.Sprintf("%stmp%d.go", addSeparatorPath(root),time.Seconds());
 
     dir, e1 := os.Stat(testtmpfile);
 

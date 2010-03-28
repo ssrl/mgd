@@ -111,6 +111,31 @@ func (c *Compiler) ForkCompile(pkgs *vector.Vector){
     }
 }
 
+func (c *Compiler) DeletePackages(pkgs *vector.Vector) bool{
+    var ok = true;
+    var e os.Error;
+
+    for p := range pkgs.Iter() {
+        pkg, _ := p.(*dag.Package);//safe cast, only Packages there
+
+        for f := range pkg.Files.Iter(){
+            e = os.Remove(f);
+            if e != nil{
+                ok = false;
+                fmt.Fprintf(os.Stderr,"[ERROR] %s\n",e);
+            }
+        }
+        pcompile := path.Join(c.root, pkg.Name) + c.suffix;
+        e = os.Remove(pcompile);
+        if e != nil{
+            ok = false;
+            fmt.Fprintf(os.Stderr,"[ERROR] %s\n",e);
+        }
+    }
+
+    return ok;
+}
+
 func (c *Compiler) ForkLink(pkgs *vector.Vector, output string){
 
     gotMain := new(vector.Vector);
