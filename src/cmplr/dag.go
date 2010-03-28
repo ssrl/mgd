@@ -13,6 +13,7 @@ import(
     "go/ast";
     "os";
     "fmt";
+    "time";
 )
 
 
@@ -55,9 +56,7 @@ func newTestCollector() *TestCollector{
 
 func (d *Dag) Parse(root string, sv *vector.StringVector){
 
-    if root[len(root)-1:len(root)] != "/" {
-        root = root + "/";
-    }
+    root = addSeparatorPath(root);
 
     for e := range sv.Iter() {
 
@@ -104,12 +103,10 @@ func (d *Dag) GraphBuilder(){
     }
 }
 
-func (d *Dag) MakeMainTest() *Package{
-
-    fmt.Println("MakeMainTest");
+func (d *Dag) MakeMainTest(root string) *vector.Vector{
 
     var max int;
-    var sname string;
+    var sname, testtmpfile string;
 
     sbImports := stringbuffer.NewSize(300);
     sbTests   := stringbuffer.NewSize(1000);
@@ -161,9 +158,43 @@ func (d *Dag) MakeMainTest() *Package{
     sbTotal.Add("func main(){\n");
     sbTotal.Add("testing.Main(tests);\n");
     sbTotal.Add("testing.RunBenchmarks(benchmarks);\n}\n\n");
-    fmt.Printf("%s", sbTotal);
 
-    return newPackage();
+    testtmpfile = fmt.Sprintf("%stmp%d.go", addSeparatorPath(root), time.Seconds());
+
+    dir, e1 := os.Stat(testtmpfile);
+
+    if e1 == nil && dir.IsRegular() {
+        fmt.Fprintf(os.Stderr,"[ERROR] file: %s already exists\n",testtmpfile);
+    }
+
+    // 493 == -rwxr-xr-x == 755 mode
+    fil, e2 := os.Open(testtmpfile, os.O_WRONLY | os.O_CREAT, 493);
+
+    if e2 != nil {
+        fmt.Fprintf(os.Stderr, "[ERROR] %s\n", e2);
+        os.Exit(1);
+    }
+
+    n, e3 := fil.WriteString(sbTotal.String());
+
+    if e3 != nil {
+        fmt.Fprintf(os.Stderr,"[ERROR] %s\n", e3);
+        os.Exit(1);
+    }else if n != sbTotal.Len(){
+        fmt.Fprintf(os.Stderr,"[ERROR] failed to write test\n");
+        os.Exit(1);
+    }
+
+    fil.Close();
+
+    p := newPackage();
+    p.Name = "main";
+    p.ShortName = "main";
+    p.Files.Push(testtmpfile);
+
+    vec := new(vector.Vector);
+    vec.Push(p);
+    return vec;
 }
 
 func (d *Dag) Topsort() *vector.Vector{
@@ -265,6 +296,12 @@ func stripQuotes(s string) string{
     return stripped;
 }
 
+func addSeparatorPath(root string) string{
+    if root[len(root)-1:] != "/" {
+        root = root + "/";
+    }
+    return root;
+}
 
 func getSyntaxTreeOrDie(file string, mode uint) (*ast.File){
     absSynTree, err := parser.ParseFile(file, nil, nil, mode);
@@ -274,3 +311,4 @@ func getSyntaxTreeOrDie(file string, mode uint) (*ast.File){
     }
     return absSynTree;
 }
+

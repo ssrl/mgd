@@ -14,6 +14,8 @@ import(
 	"container/vector";
     "parse/gopt";
 	"strings";
+    // dill
+///     "syscall";
 )
 
 
@@ -113,7 +115,10 @@ func main(){
         }
 
         if test {
-            dgrph.MakeMainTest();
+            testMain := dgrph.MakeMainTest(args[i]);
+            cmplr.ForkCompile(testMain);
+            cmplr.ForkLink(testMain, "gdtest");
+///             os.Unlink(path.Join(args[i],
         }
     }
 }

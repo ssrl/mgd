@@ -106,7 +106,7 @@ func (c *Compiler) ForkCompile(pkgs *vector.Vector){
             dryRun(argv);
         }else{
             fmt.Println("compiling:",pkg.Name);
-            handy.StdExecve(argv);
+            handy.StdExecve(argv, true);
         }
     }
 }
@@ -148,7 +148,7 @@ func (c *Compiler) ForkLink(pkgs *vector.Vector, output string){
         dryRun(argv);
     }else{
         fmt.Println("linking  :",output);
-        handy.StdExecve(argv);
+        handy.StdExecve(argv, true);
     }
 }
 
