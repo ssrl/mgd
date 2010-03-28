@@ -14,8 +14,7 @@ import(
 	"container/vector";
     "parse/gopt";
 	"strings";
-    // dill
-///     "syscall";
+    "utilz/handy";
 )
 
 
@@ -53,8 +52,8 @@ func main(){
 
     var files *vector.StringVector;
 
-    var arch, output, srcdir string;
-    var dryrun, test bool;
+    var arch, output, srcdir, bmatch, match string;
+    var dryrun, test, testVerbose bool;
 
     getopt := gopt.New();
 
@@ -65,8 +64,11 @@ func main(){
     getopt.BoolOption("-p -print --print");
     getopt.BoolOption("-d -dryrun --dryrun");
     getopt.BoolOption("-t -test --test");
+    getopt.BoolOption("-V -verbose --verbose");
     getopt.StringOption("-a -arch --arch -arch= --arch=");
     getopt.StringOption("-o -output --output -output= --output=");
+    getopt.StringOption("-b -benchmarks --benchmarks -benchmarks= --benchmarks=");
+    getopt.StringOption("-m -match --match -match= --match=");
 
     args := getopt.Parse(os.Args[1:]);
 
@@ -74,6 +76,7 @@ func main(){
     if getopt.IsSet("-version") { printVersion(); os.Exit(0); }
     if getopt.IsSet("-clean") { rm865(args); os.Exit(0); }
     if getopt.IsSet("-dryrun"){ dryrun = true; }
+    if getopt.IsSet("-verbose"){ testVerbose = true; }
     if getopt.IsSet("-test"){
         test = true;
         findTestFilesAlso();
@@ -83,6 +86,8 @@ func main(){
 
     if getopt.IsSet("-arch"){ arch = getopt.Get("-a"); }
     if getopt.IsSet("-output"){ output = getopt.Get("-o"); }
+    if getopt.IsSet("-benchmarks"){ bmatch = getopt.Get("-b"); }
+    if getopt.IsSet("-match"){ match = getopt.Get("-m"); }
 
 
     if len(args) == 0{
@@ -95,48 +100,82 @@ func main(){
     }
 
 
-///     for i := 0; i < len(args) ; i++ {
+    files = findFiles(srcdir);
 
-///         files = findFiles(args[i]);
-        files = findFiles(srcdir);
+    dgrph := dag.New();
+    dgrph.Parse(srcdir, files);
 
-        dgrph := dag.New();
-///         dgrph.Parse(args[i], files);
-        dgrph.Parse(srcdir, files);
+    if getopt.IsSet("-print") {
+        dgrph.PrintInfo();
+        os.Exit(0);
+    }
 
-        if getopt.IsSet("-print") {
-            dgrph.PrintInfo();
-            os.Exit(0);
+    dgrph.GraphBuilder();
+    sorted := dgrph.Topsort();
+
+    if getopt.IsSet("-sort") {
+        for pkg := range sorted.Iter() {
+            rpkg, _ := pkg.(*dag.Package);
+            fmt.Printf("%s\n", rpkg.Name);
         }
+        os.Exit(0);
+    }
 
-        dgrph.GraphBuilder();
-        sorted := dgrph.Topsort();
+    cmplr  := compiler.New(srcdir, arch, dryrun);
+    cmplr.ForkCompile(sorted);
 
-        if getopt.IsSet("-sort") {
-            for pkg := range sorted.Iter() {
-                rpkg, _ := pkg.(*dag.Package);
-                fmt.Printf("%s\n", rpkg.Name);
-            }
-            os.Exit(0);
+    if test {
+        testMain := dgrph.MakeMainTest(srcdir);
+        cmplr.ForkCompile(testMain);
+        cmplr.ForkLink(testMain, "gdtest");
+        cmplr.DeletePackages(testMain);
+        testArgv := createTestArgv("gdtest", bmatch, match, testVerbose);
+        tstring := "testing  : ";
+        if testVerbose { tstring += "\n"; }
+        fmt.Printf(tstring);
+        ok := handy.StdExecve(testArgv, false);
+        e := os.Remove("gdtest");
+        if e != nil{
+            fmt.Fprintf(os.Stderr,"[ERROR] %s\n",e);
         }
-
-///         cmplr  := compiler.New(args[i], arch, dryrun);
-        cmplr  := compiler.New(srcdir, arch, dryrun);
-        cmplr.ForkCompile(sorted);
-
-        if test {
-///             testMain := dgrph.MakeMainTest(args[i]);
-            testMain := dgrph.MakeMainTest(srcdir);
-            cmplr.ForkCompile(testMain);
-            cmplr.ForkLink(testMain, "gdtest");
-            cmplr.DeletePackages(testMain);
+        if ! ok {
+            os.Exit(1);
         }
+    }
 
-        if output != "" {
-            cmplr.ForkLink(sorted, output);
-        }
+    if output != "" {
+        cmplr.ForkLink(sorted, output);
+    }
 
-///     }
+}
+
+func createTestArgv(prg, bmatch, match string, tverb bool) ([]string) {
+    var numArgs int = 1;
+    pwd, e := os.Getwd();
+    if e != nil {
+        fmt.Fprintf(os.Stderr,"[ERROR] could not locate working directory\n");
+        os.Exit(1);
+    }
+    arg0 := path.Join(pwd, prg);
+    if bmatch != "" { numArgs += 2; }
+    if match  != "" { numArgs += 2; }
+    if tverb        { numArgs++;    }
+
+    var i = 1;
+    argv := make([]string, numArgs);
+    argv[0] = arg0;
+    if bmatch != "" {
+        argv[i] = "-benchmarks"; i++;
+        argv[i] = bmatch; i++;
+    }
+    if match != "" {
+        argv[i] = "-match"; i++;
+        argv[i] = match; i++;
+    }
+    if tverb {
+        argv[i] = "-v";
+    }
+    return argv;
 }
 
 func findFiles(pathname string) *vector.StringVector{
@@ -198,14 +237,18 @@ func printHelp(){
 
   options:
 
-  -h --help        print this message and quit
-  -v --version     print version and quit
-  -p --print       print package info collected
-  -s --sort        print legal compile order
-  -o --output      link to produce program
-  -a --arch        architecture (amd64,arm,386)
-  -d --dryrun      print what gd would do (stdout)
-  -c --clean       rm *.[a865] from src-directory
+  -h --help            print this message and quit
+  -v --version         print version and quit
+  -p --print           print package info collected
+  -s --sort            print legal compile order
+  -o --output          link to produce program
+  -a --arch            architecture (amd64,arm,386)
+  -d --dryrun          print what gd would do (stdout)
+  -c --clean           rm *.[a865] from src-directory
+  -t --test            run all unit-tests
+  -b --benchmarks      pass argument to unit-test
+  -m --match           pass argument to unit-test
+  -V --verbose         pass argument to unit-test
     `;
 
     fmt.Println(helpMSG);

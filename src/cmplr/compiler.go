@@ -110,7 +110,7 @@ func (c *Compiler) ForkCompile(pkgs *vector.Vector){
         }
     }
 }
-
+// for removal of temoprary packages created for testing and so on..
 func (c *Compiler) DeletePackages(pkgs *vector.Vector) bool{
     var ok = true;
     var e os.Error;
