@@ -31,24 +31,27 @@ func TestStringSet(t *testing.T){
     }
 
     if ss.Contains("not here") {
-        t.Fatal(" stringset.Contains('not here')");
+        t.Fatal(" stringset.Contains('not here')\n");
     }
 }
 
 func TestStringBuffer(t *testing.T){
+
     ss := stringbuffer.New();
     ss.Add("en");
     if ss.String() != "en" {
-        t.FailNow();
+        t.Fatal(" stringset.String() != 'en'\n");
     }
-}
-
-func BenchmarkStringBuffer(b *testing.B){
-    b.StartTimer();
-    cnt := 0;
-    for i:= 0; i < 100; i++{
-        cnt++;
+    ss.Add("to");
+    if ss.String() != "ento" {
+        t.Fatal(" stringset.String() != 'ento'\n");
     }
-    b.StopTimer();
+    if ss.Len() != 4 {
+        t.Fatal(" stringset.Len() != 4\n");
+    }
+    ss.ClearSize(5);
+    if ss.Len() != 0 {
+        t.Fatal(" stringset.Len() != 0\n");
+    }
 }
 

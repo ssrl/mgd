@@ -248,7 +248,7 @@ func printHelp(){
   -t --test            run all unit-tests
   -b --benchmarks      pass argument to unit-test
   -m --match           pass argument to unit-test
-  -V --verbose         pass argument to unit-test
+  -V --verbose         pass argument '-v' to unit-test
     `;
 
     fmt.Println(helpMSG);

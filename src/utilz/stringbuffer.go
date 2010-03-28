@@ -49,6 +49,12 @@ func (s *StringBuffer) Clear(){
     s.max = 100;
 }
 
+func (s *StringBuffer) ClearSize(z int){
+    s.buffer = make([]byte, z);
+    s.current = 0;
+    s.max = z;
+}
+
 func (s *StringBuffer) Capacity() int{
     return s.max;
 }

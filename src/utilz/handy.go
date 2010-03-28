@@ -33,7 +33,9 @@ func StdExecve(argv []string, stopOnTrouble bool) (ok bool){
     }else{
         wmsg, werr := os.Wait(pid, 0);
         if werr != nil || wmsg.WaitStatus != 0 {
-            fmt.Fprintf(os.Stderr, "[ERROR] %s\n", werr);
+            if werr != nil {
+                fmt.Fprintf(os.Stderr, "[ERROR] %s\n", werr);
+            }
             if stopOnTrouble { os.Exit(1); }
             ok = false;
         }
