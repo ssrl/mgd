@@ -24,7 +24,7 @@ Usage:
  getopt.BoolOption("-h -help --help");
  getopt.BoolOption("-v -version --version");
  getopt.StringOption("-f -file --file --file=");
- getopt.StringOption("-l --list");
+ getopt.StringOption("-l -list --list");
  getopt.StringOption("-I");
 
  args := getopt.Parse(os.Args[1:]);
@@ -34,7 +34,7 @@ Usage:
  if getopt.IsSet("-help"){ println("-help"); }
  if getopt.IsSet("-v")   { println("-version"); }
  if getopt.IsSet("-file"){ println("--file ",getopt.Get("-f")); }
- if getopt.IsSet("-list"){ println("--list ",getopt.Get("-list"); }
+ if getopt.IsSet("-list"){ println("--list ",getopt.Get("-list")); }
 
  if getopt.IsSet("-I"){
      elms := getopt.GetMultiple("-I");
