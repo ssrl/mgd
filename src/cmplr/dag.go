@@ -84,7 +84,7 @@ func (d *Dag) addEdge(from, to string){
     toNode.indegree++;
 }
 
-func (d *Dag) GraphBuilder(){
+func (d *Dag) GraphBuilder(includes []string){
 
     goRoot := path.Join(os.Getenv("GOROOT"), "src/pkg");
 
@@ -95,9 +95,19 @@ func (d *Dag) GraphBuilder(){
             if d.localDependency(dep) {
                 d.addEdge(dep, k);
             }else if ! d.stdlibDependency(goRoot, dep) {
-                fmt.Fprintf(os.Stderr,"[ERROR] Dependency: %s not found\n",dep);
-                fmt.Fprintf(os.Stderr,"[ERROR] Did you use actual src-root?\n");
-                os.Exit(1);
+                if includes != nil && len(includes) > 0 {
+                    sb := stringbuffer.New();
+                    sb.Add("\n[WARNING] the dependency '%s' could not be\n");
+                    sb.Add("[WARNING] located in stdlib, or in local source tree\n")
+                    sb.Add("[WARNING] hopefully it can be found in your includes (-I)\n")
+                    sb.Add("[WARNING] looking for it is not implemented yet ");
+                    sb.Add("- good luck :-)\n\n");
+                    fmt.Fprintf(os.Stderr,sb.String(), dep);
+                }else{
+                    fmt.Fprintf(os.Stderr,"[ERROR] Dependency: %s not found\n",dep);
+                    fmt.Fprintf(os.Stderr,"[ERROR] Did you use actual src-root?\n");
+                    os.Exit(1);
+                }
             }
         }
     }

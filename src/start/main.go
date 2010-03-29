@@ -53,12 +53,14 @@ func main(){
     var files *vector.StringVector;
 
     var arch, output, srcdir, bmatch, match string;
-    var dryrun, test, testVerbose bool;
+    var dryrun, test, testVerbose, static bool;
+    var includes []string = nil;
 
     getopt := gopt.New();
 
     getopt.BoolOption("-h -help --help help");
     getopt.BoolOption("-c -clean --clean clean");
+    getopt.BoolOption("-S -static --static");
     getopt.BoolOption("-v -version --version version");
     getopt.BoolOption("-s -sort --sort sort");
     getopt.BoolOption("-p -print --print");
@@ -66,16 +68,27 @@ func main(){
     getopt.BoolOption("-t -test --test");
     getopt.BoolOption("-V -verbose --verbose");
     getopt.StringOption("-a -arch --arch -arch= --arch=");
+    getopt.StringOption("-I");
     getopt.StringOption("-o -output --output -output= --output=");
     getopt.StringOption("-b -benchmarks --benchmarks -benchmarks= --benchmarks=");
     getopt.StringOption("-m -match --match -match= --match=");
 
     args := getopt.Parse(os.Args[1:]);
 
+    if len(args) == 0{
+        srcdir = "src";
+    }else{
+        if len(args) > 1 {
+            fmt.Fprintf(os.Stderr,"[WARNING] len(input directories) > 1\n");
+        }
+        srcdir = args[0];
+    }
+
     if getopt.IsSet("-help") { printHelp(); os.Exit(0); }
     if getopt.IsSet("-version") { printVersion(); os.Exit(0); }
-    if getopt.IsSet("-clean") { rm865(args); os.Exit(0); }
+    if getopt.IsSet("-clean") { rm865(srcdir); os.Exit(0); }
     if getopt.IsSet("-dryrun"){ dryrun = true; }
+    if getopt.IsSet("-static"){ static = true; }
     if getopt.IsSet("-verbose"){ testVerbose = true; }
     if getopt.IsSet("-test"){
         test = true;
@@ -88,16 +101,7 @@ func main(){
     if getopt.IsSet("-output"){ output = getopt.Get("-o"); }
     if getopt.IsSet("-benchmarks"){ bmatch = getopt.Get("-b"); }
     if getopt.IsSet("-match"){ match = getopt.Get("-m"); }
-
-
-    if len(args) == 0{
-        srcdir = "src";
-    }else{
-        if len(args) > 1 {
-            fmt.Fprintf(os.Stderr,"[WARNING] len(input directories) > 1\n");
-        }
-        srcdir = args[0];
-    }
+    if getopt.IsSet("-I"){ includes = getopt.GetMultiple("-I"); }
 
 
     files = findFiles(srcdir);
@@ -110,7 +114,7 @@ func main(){
         os.Exit(0);
     }
 
-    dgrph.GraphBuilder();
+    dgrph.GraphBuilder(includes);
     sorted := dgrph.Topsort();
 
     if getopt.IsSet("-sort") {
@@ -121,13 +125,13 @@ func main(){
         os.Exit(0);
     }
 
-    cmplr  := compiler.New(srcdir, arch, dryrun);
+    cmplr  := compiler.New(srcdir, arch, dryrun, includes);
     cmplr.ForkCompile(sorted);
 
     if test {
         testMain := dgrph.MakeMainTest(srcdir);
         cmplr.ForkCompile(testMain);
-        cmplr.ForkLink(testMain, "gdtest");
+        cmplr.ForkLink(testMain, "gdtest", false);
         cmplr.DeletePackages(testMain);
         testArgv := createTestArgv("gdtest", bmatch, match, testVerbose);
         tstring := "testing  : ";
@@ -144,7 +148,7 @@ func main(){
     }
 
     if output != "" {
-        cmplr.ForkLink(sorted, output);
+        cmplr.ForkLink(sorted, output, static);
     }
 
 }
@@ -199,7 +203,7 @@ func okDirOrDie(pathname string){
     }
 }
 
-func rm865(args []string){
+func rm865(srcdir string){
 
     // override IncludeFile to make walker pick up only .[865] files
     walker.IncludeFile = func(s string)bool{
@@ -210,29 +214,24 @@ func rm865(args []string){
 
     };
 
-    if len(args) == 0 {
-        fmt.Println("which directory do you want cleaned out?");
-    }
+    okDirOrDie(srcdir);
 
-    for i := 0; i < len(args); i++ {
+    compiled := walker.PathWalk(path.Clean(srcdir));
 
-        okDirOrDie(args[i]);
-
-        compiled := walker.PathWalk(path.Clean(args[i]));
-
-        for s := range compiled.Iter() {
-            fmt.Printf("rm: %s\n", s);
-            e := os.Remove(s);
-            if e != nil {
-                fmt.Fprintf(os.Stderr,"[ERROR] could not delete file: %s\n",s);
-            }
+    for s := range compiled.Iter() {
+        fmt.Printf("rm: %s\n", s);
+        e := os.Remove(s);
+        if e != nil {
+            fmt.Fprintf(os.Stderr,"[ERROR] could not delete file: %s\n",s);
         }
     }
-
 }
 
 func printHelp(){
     var helpMSG string =`
+  godag is a compiler front-end for golang,
+  hopefully you can avoid Makefiles.
+
   usage: gd [OPTIONS] src-directory
 
   options:
@@ -241,7 +240,8 @@ func printHelp(){
   -v --version         print version and quit
   -p --print           print package info collected
   -s --sort            print legal compile order
-  -o --output          link to produce program
+  -o --output          link main package -> output
+  -S --static          statically link binary
   -a --arch            architecture (amd64,arm,386)
   -d --dryrun          print what gd would do (stdout)
   -c --clean           rm *.[a865] from src-directory
@@ -249,6 +249,7 @@ func printHelp(){
   -b --benchmarks      pass argument to unit-test
   -m --match           pass argument to unit-test
   -V --verbose         pass argument '-v' to unit-test
+  -I                   import package directories (incomplete!)
     `;
 
     fmt.Println(helpMSG);

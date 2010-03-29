@@ -17,14 +17,16 @@ import(
 type Compiler struct{
     root, arch, suffix, executable string;
     dryrun bool;
+    includes []string;
 }
 
-func New(root, arch string, dryrun bool) *Compiler{
+func New(root, arch string, dryrun bool,include []string) *Compiler{
     c      := new(Compiler);
     c.root  = root;
     c.arch, c.suffix = archNsuffix(arch);
     c.executable     = findCompiler(c.arch);
     c.dryrun = dryrun;
+    c.includes = include;
     return c;
 }
 
@@ -84,16 +86,25 @@ func (c *Compiler) String() string{
     return fmt.Sprintf(s, c.root, c.arch, c.suffix, c.executable);
 }
 
+
 func (c *Compiler) ForkCompile(pkgs *vector.Vector){
+
+    includeLen := c.extraPkgIncludes();
 
     for p := range pkgs.Iter() {
         pkg, _ := p.(*dag.Package);//safe cast, only Packages there
 
-        argv := make([]string, 5 + pkg.Files.Len());
+        argv := make([]string, 5 + pkg.Files.Len() + (includeLen*2));
         i    := 0;
         argv[i] = c.executable; i++;
         argv[i] = "-I"; i++;
         argv[i] = c.root; i++;
+        if includeLen > 0 {
+            for y := 0; y < includeLen; y ++ {
+                argv[i] = "-I"; i++;
+                argv[i] = c.includes[y]; i++;
+            }
+        }
         argv[i] = "-o"; i++;
         argv[i] = path.Join(c.root, pkg.Name) + c.suffix; i++;
 
@@ -136,7 +147,7 @@ func (c *Compiler) DeletePackages(pkgs *vector.Vector) bool{
     return ok;
 }
 
-func (c *Compiler) ForkLink(pkgs *vector.Vector, output string){
+func (c *Compiler) ForkLink(pkgs *vector.Vector, output string, static bool){
 
     gotMain := new(vector.Vector);
 
@@ -155,18 +166,29 @@ func (c *Compiler) ForkLink(pkgs *vector.Vector, output string){
         die("[ERROR] (linking) more than one main package found\n");
     }
 
+    includeLen := c.extraPkgIncludes();
+    staticXtra := 0;
+    if static { staticXtra++; }
+
     pkg, _ := gotMain.Pop().(*dag.Package);
 
     linker := findLinker(c.arch);
     compiled := path.Join(c.root, pkg.Name) + c.suffix;
 
-    argv := make([]string, 6);
+    argv := make([]string, 6 + includeLen + staticXtra);
     i    := 0;
     argv[i] = linker; i++;
     argv[i] = "-o"; i++;
     argv[i] = output; i++;
     argv[i] = "-L"; i++;
     argv[i] = c.root; i++;
+    if static { argv[i] = "-d"; i++; }
+    if includeLen > 0{
+        for y := 0; y < includeLen; y++ {
+            argv[i] = "-L"; i++;
+            argv[i] = c.includes[y]; i++;
+        }
+    }
     argv[i] = compiled; i++;
 
     if c.dryrun {
@@ -191,4 +213,11 @@ func dryRun(argv []string){
     }
 
     fmt.Printf("%s || exit 1\n",cmd);
+}
+
+func (c *Compiler) extraPkgIncludes() int{
+    if c.includes != nil && len(c.includes) > 0 {
+        return len(c.includes);
+    }
+    return 0;
 }
