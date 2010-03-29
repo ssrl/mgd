@@ -125,14 +125,14 @@ func main(){
         os.Exit(0);
     }
 
-    cmplr  := compiler.New(srcdir, arch, dryrun, includes);
-    cmplr.ForkCompile(sorted);
+    kompiler  := compiler.New(srcdir, arch, dryrun, includes);
+    kompiler.ForkCompile(sorted);
 
     if test {
         testMain := dgrph.MakeMainTest(srcdir);
-        cmplr.ForkCompile(testMain);
-        cmplr.ForkLink(testMain, "gdtest", false);
-        cmplr.DeletePackages(testMain);
+        kompiler.ForkCompile(testMain);
+        kompiler.ForkLink(testMain, "gdtest", false);
+        kompiler.DeletePackages(testMain);
         testArgv := createTestArgv("gdtest", bmatch, match, testVerbose);
         tstring := "testing  : ";
         if testVerbose { tstring += "\n"; }
@@ -148,7 +148,7 @@ func main(){
     }
 
     if output != "" {
-        cmplr.ForkLink(sorted, output, static);
+        kompiler.ForkLink(sorted, output, static);
     }
 
 }
