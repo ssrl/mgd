@@ -17,6 +17,7 @@ function build(){
     cd src/utilz && $COMPILER walker.go || exit 1
     $COMPILER handy.go || exit 1
     $COMPILER stringset.go || exit 1
+    $COMPILER stringbuffer.go || exit 1
     cd $HERE/src/parse && $COMPILER -o gopt.$OBJ option.go gopt.go || exit 1
     cd $HERE/src/cmplr && $COMPILER -I $IDIR dag.go || exit 1
     $COMPILER -I $IDIR compiler.go || exit 1
