@@ -82,10 +82,6 @@ func stop(msg string, format ...interface{}){
     os.Exit(1);
 }
 
-func err(msg string, format ...interface{}){
-    fmt.Fprintf(os.Stderr, msg, format);
-}
-
 func (g *GetOpt) getStringOption(o string) *StringOption{
 
     opt := g.isOption(o);
@@ -111,7 +107,8 @@ func (g *GetOpt) Get(o string) string{
     switch sopt.count {
         case 0 : stop("%s: is not set\n", o);
         case 1 : // fine do nothing
-        default: err("[warning] option %s: has more arguments than 1\n", o);
+        default:
+            fmt.Fprintf(os.Stderr,"[warning] option %s: has more arguments than 1\n", o);
     }
     return sopt.values[0];
 }
