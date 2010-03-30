@@ -129,10 +129,14 @@ func main(){
     kompiler.ForkCompile(sorted);
 
     if test {
-        testMain := dgrph.MakeMainTest(srcdir);
+        testMain, testDir := dgrph.MakeMainTest(srcdir);
         kompiler.ForkCompile(testMain);
         kompiler.ForkLink(testMain, "gdtest", false);
         kompiler.DeletePackages(testMain);
+        rmError := os.Remove(testDir);
+        if rmError != nil {
+            fmt.Fprintf(os.Stderr,"[ERROR] failed to remove testdir: %s\n",testDir);
+        }
         testArgv := createTestArgv("gdtest", bmatch, match, testVerbose);
         tstring := "testing  : ";
         if testVerbose { tstring += "\n"; }

@@ -113,10 +113,10 @@ func (d *Dag) GraphBuilder(includes []string){
     }
 }
 
-func (d *Dag) MakeMainTest(root string) *vector.Vector{
+func (d *Dag) MakeMainTest(root string) (*vector.Vector, string){
 
     var max int;
-    var sname, testtmpfile string;
+    var sname, tmpdir, tmpstub, tmpfile string;
 
     sbImports := stringbuffer.NewSize(300);
     sbTests   := stringbuffer.NewSize(1000);
@@ -169,16 +169,26 @@ func (d *Dag) MakeMainTest(root string) *vector.Vector{
     sbTotal.Add("testing.Main(tests);\n");
     sbTotal.Add("testing.RunBenchmarks(benchmarks);\n}\n\n");
 
-    testtmpfile = fmt.Sprintf("%stmp%d.go", addSeparatorPath(root),time.Seconds());
+    tmpstub = fmt.Sprintf("tmp%d", time.Seconds());
+    tmpdir  = fmt.Sprintf("%s%s", addSeparatorPath(root), tmpstub);
 
-    dir, e1 := os.Stat(testtmpfile);
+    dir, e1 := os.Stat(tmpdir);
 
-    if e1 == nil && dir.IsRegular() {
-        fmt.Fprintf(os.Stderr,"[ERROR] file: %s already exists\n",testtmpfile);
+    if e1 == nil && dir.IsDirectory() {
+        fmt.Fprintf(os.Stderr,"[ERROR] directory: %s already exists\n",tmpdir);
+    }else{
+        // 493 == -rwxr-xr-x == 755 mode
+        e_mk := os.Mkdir(tmpdir, 493);
+        if e_mk != nil {
+            fmt.Fprintf(os.Stderr,"[ERROR] failed to create directory for testing\n");
+            os.Exit(1);
+        }
     }
 
+    tmpfile = path.Join(tmpdir, "main.go");
+
     // 493 == -rwxr-xr-x == 755 mode
-    fil, e2 := os.Open(testtmpfile, os.O_WRONLY | os.O_CREAT, 493);
+    fil, e2 := os.Open(tmpfile, os.O_WRONLY | os.O_CREAT, 493);
 
     if e2 != nil {
         fmt.Fprintf(os.Stderr, "[ERROR] %s\n", e2);
@@ -198,13 +208,13 @@ func (d *Dag) MakeMainTest(root string) *vector.Vector{
     fil.Close();
 
     p := newPackage();
-    p.Name = "main";
+    p.Name = tmpstub +"/main";
     p.ShortName = "main";
-    p.Files.Push(testtmpfile);
+    p.Files.Push(tmpfile);
 
     vec := new(vector.Vector);
     vec.Push(p);
-    return vec;
+    return vec, tmpdir;
 }
 
 func (d *Dag) Topsort() *vector.Vector{
