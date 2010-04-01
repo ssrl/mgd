@@ -253,7 +253,7 @@ func printHelp(){
   -b --benchmarks      pass argument to unit-test
   -m --match           pass argument to unit-test
   -V --verbose         pass argument '-v' to unit-test
-  -I                   import package directories (incomplete!)
+  -I                   import package directories
     `;
 
     fmt.Println(helpMSG);
