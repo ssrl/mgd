@@ -83,7 +83,10 @@ func (d *Dag) addEdge(from, to string){
     fromNode.children.Push(toNode);
     toNode.indegree++;
 }
-
+// note that nothing is done in order to check if dependencies
+// are valid if they are in included libraries, also stdlib
+// dependencies are just checked up agains the path-names in
+// src/pkg/
 func (d *Dag) GraphBuilder(includes []string){
 
     goRoot := path.Join(os.Getenv("GOROOT"), "src/pkg");
@@ -95,15 +98,7 @@ func (d *Dag) GraphBuilder(includes []string){
             if d.localDependency(dep) {
                 d.addEdge(dep, k);
             }else if ! d.stdlibDependency(goRoot, dep) {
-                if includes != nil && len(includes) > 0 {
-                    sb := stringbuffer.New();
-                    sb.Add("\n[WARNING] the dependency '%s' could not be\n");
-                    sb.Add("[WARNING] located in stdlib, or in local source tree\n")
-                    sb.Add("[WARNING] hopefully it can be found in your includes (-I)\n")
-                    sb.Add("[WARNING] looking for it is not implemented yet ");
-                    sb.Add("- good luck :-)\n\n");
-                    fmt.Fprintf(os.Stderr,sb.String(), dep);
-                }else{
+                if includes == nil || len(includes) > 0 {
                     fmt.Fprintf(os.Stderr,"[ERROR] Dependency: %s not found\n",dep);
                     fmt.Fprintf(os.Stderr,"[ERROR] Did you use actual src-root?\n");
                     os.Exit(1);
@@ -115,8 +110,10 @@ func (d *Dag) GraphBuilder(includes []string){
 
 func (d *Dag) MakeMainTest(root string) (*vector.Vector, string){
 
-    var max int;
+    var max, rwxr_xr_x int;
+    var isTest bool;
     var sname, tmpdir, tmpstub, tmpfile string;
+    rwxr_xr_x = 493;
 
     sbImports := stringbuffer.NewSize(300);
     sbTests   := stringbuffer.NewSize(1000);
@@ -132,25 +129,54 @@ func (d *Dag) MakeMainTest(root string) (*vector.Vector, string){
 
     for _, v := range d.pkgs {
 
+        isTest = false;
         sname = v.ShortName;
         max = len(v.ShortName);
 
         if max > 5 && sname[max-5:] == "_test" {
-            sbImports.Add(fmt.Sprintf("import \"%s\";\n", v.Name));
             collector := newTestCollector();
             for elm := range v.Files.Iter() {
                 tree := getSyntaxTreeOrDie(elm, 0);
                 ast.Walk( collector, tree );
             }
 
-            for testFunc := range collector.Names.Iter() {
-                if len(testFunc) > 4 && testFunc[0:4] == "Test" {
-                    sbTests.Add(fmt.Sprintf("testing.Test{\"%s.%s\", %s.%s },\n",
-                                            sname, testFunc, sname, testFunc));
-                }else if len(testFunc) > 9 && testFunc[0:9] == "Benchmark" {
-                    sbBench.Add(fmt.Sprintf("testing.Benchmark{\"%s.%s\", %s.%s },\n",
-                                            sname, testFunc, sname, testFunc));
+            if collector.Names.Len() > 0 {
+                isTest = true;
+                sbImports.Add(fmt.Sprintf("import \"%s\";\n", v.Name));
+                for testFunc := range collector.Names.Iter() {
+                    if len(testFunc) > 4 && testFunc[0:4] == "Test" {
+                        sbTests.Add(fmt.Sprintf("testing.Test{\"%s.%s\", %s.%s },\n",
+                                                sname, testFunc, sname, testFunc));
+                    }else if len(testFunc) > 9 && testFunc[0:9] == "Benchmark" {
+                        sbBench.Add(fmt.Sprintf("testing.Benchmark{\"%s.%s\", %s.%s },\n",
+                                                sname, testFunc, sname, testFunc));
 
+                    }
+                }
+            }
+        }
+
+        if ! isTest {
+
+            collector := newTestCollector();
+
+            for fname := range v.Files.Iter() {
+                if len(fname) > 8 && fname[len(fname)-8:] == "_test.go"{
+                    tree := getSyntaxTreeOrDie(fname, 0);
+                    ast.Walk( collector, tree );
+                }
+            }
+
+            if collector.Names.Len() > 0 {
+                sbImports.Add(fmt.Sprintf("import \"%s\";\n", v.Name));
+                for testFunc := range collector.Names.Iter() {
+                    if len(testFunc) > 4 && testFunc[0:4] == "Test" {
+                        sbTests.Add(fmt.Sprintf("testing.Test{\"%s.%s\", %s.%s },\n",
+                                                sname, testFunc, sname, testFunc));
+                    }else if len(testFunc) > 9 && testFunc[0:9] == "Benchmark" {
+                        sbBench.Add(fmt.Sprintf("testing.Benchmark{\"%s.%s\", %s.%s },\n",
+                                                sname, testFunc, sname, testFunc));
+                    }
                 }
             }
         }
@@ -177,8 +203,7 @@ func (d *Dag) MakeMainTest(root string) (*vector.Vector, string){
     if e1 == nil && dir.IsDirectory() {
         fmt.Fprintf(os.Stderr,"[ERROR] directory: %s already exists\n",tmpdir);
     }else{
-        // 493 == -rwxr-xr-x == 755 mode
-        e_mk := os.Mkdir(tmpdir, 493);
+        e_mk := os.Mkdir(tmpdir, rwxr_xr_x);
         if e_mk != nil {
             fmt.Fprintf(os.Stderr,"[ERROR] failed to create directory for testing\n");
             os.Exit(1);
@@ -187,8 +212,7 @@ func (d *Dag) MakeMainTest(root string) (*vector.Vector, string){
 
     tmpfile = path.Join(tmpdir, "main.go");
 
-    // 493 == -rwxr-xr-x == 755 mode
-    fil, e2 := os.Open(tmpfile, os.O_WRONLY | os.O_CREAT, 493);
+    fil, e2 := os.Open(tmpfile, os.O_WRONLY | os.O_CREAT, rwxr_xr_x);
 
     if e2 != nil {
         fmt.Fprintf(os.Stderr, "[ERROR] %s\n", e2);
