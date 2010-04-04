@@ -84,9 +84,9 @@ func (d *Dag) addEdge(from, to string){
     toNode.indegree++;
 }
 // note that nothing is done in order to check if dependencies
-// are valid if they are in included libraries, also stdlib
-// dependencies are just checked up agains the path-names in
-// src/pkg/
+// are valid if they are not part of the actual source-tree,
+// i.e., stdlib dependencies and included (-I) dependencies
+// are not investigated for validity..
 func (d *Dag) GraphBuilder(includes []string){
 
     goRoot := path.Join(os.Getenv("GOROOT"), "src/pkg");
@@ -97,6 +97,7 @@ func (d *Dag) GraphBuilder(includes []string){
 
             if d.localDependency(dep) {
                 d.addEdge(dep, k);
+///                 fmt.Printf("local:  %s \n", dep);
             }else if ! d.stdlibDependency(goRoot, dep) {
                 if includes == nil || len(includes) > 0 {
                     fmt.Fprintf(os.Stderr,"[ERROR] Dependency: %s not found\n",dep);

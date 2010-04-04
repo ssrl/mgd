@@ -21,12 +21,12 @@ type Compiler struct{
 }
 
 func New(root, arch string, dryrun bool,include []string) *Compiler{
-    c      := new(Compiler);
-    c.root  = root;
+    c                := new(Compiler);
+    c.root           = root;
     c.arch, c.suffix = archNsuffix(arch);
     c.executable     = findCompiler(c.arch);
-    c.dryrun = dryrun;
-    c.includes = include;
+    c.dryrun         = dryrun;
+    c.includes       = include;
     return c;
 }
 
@@ -175,7 +175,7 @@ func (c *Compiler) ForkLink(pkgs *vector.Vector, output string, static bool){
     linker := findLinker(c.arch);
     compiled := path.Join(c.root, pkg.Name) + c.suffix;
 
-    argv := make([]string, 6 + includeLen + staticXtra);
+    argv := make([]string, 6 + (includeLen*2) + staticXtra);
     i    := 0;
     argv[i] = linker; i++;
     argv[i] = "-o"; i++;
