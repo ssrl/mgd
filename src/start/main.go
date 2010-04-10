@@ -52,8 +52,8 @@ func main(){
 
     var files *vector.StringVector;
 
-    var arch, output, srcdir, bmatch, match string;
-    var dryrun, test, testVerbose, static bool;
+    var arch, output, srcdir, bmatch, match, rewRule, tabWidth string;
+    var dryrun, test, testVerbose, static, noComments, tabIndent bool;
     var includes []string = nil;
 
     getopt := gopt.New();
@@ -67,8 +67,13 @@ func main(){
     getopt.BoolOption("-d -dryrun --dryrun");
     getopt.BoolOption("-t -test --test");
     getopt.BoolOption("-V -verbose --verbose");
+    getopt.BoolOption("-f -fmt --fmt");
+    getopt.BoolOption("-nc --nc");
+    getopt.BoolOption("-tab --tab");
     getopt.StringOption("-a -arch --arch -arch= --arch=");
     getopt.StringOption("-I");
+    getopt.StringOption("-tw --tw -tw= --tw=");
+    getopt.StringOption("-rw --rw -rw= --rw=");
     getopt.StringOption("-o -output --output -output= --output=");
     getopt.StringOption("-b -benchmarks --benchmarks -benchmarks= --benchmarks=");
     getopt.StringOption("-m -match --match -match= --match=");
@@ -105,6 +110,15 @@ func main(){
 
 
     files = findFiles(srcdir);
+
+
+    if getopt.IsSet("-fmt"){
+        if getopt.IsSet("-nc"){ noComments = true; }
+        if getopt.IsSet("-rw"){ rewRule = getopt.Get("-rw"); }
+        if getopt.IsSet("-tab"){ tabIndent = true; }
+        if getopt.IsSet("-tw"){ tabWidth = getopt.Get("-tw"); }
+        formatFiles(files, tabIndent, noComments, rewRule, tabWidth);
+    }
 
     dgrph := dag.New();
     dgrph.Parse(srcdir, files);
@@ -207,6 +221,47 @@ func okDirOrDie(pathname string){
     }
 }
 
+func formatFiles(files *vector.StringVector, tab, noC bool, rew, tw string){
+
+    var i int = 0;
+    var argvLen int = 0;
+    var argv []string;
+    var tabWidth string  = "-tabwidth=4";
+    var useTabs  string  = "-tabindent=false";
+    var comments string  = "-comments=true";
+    var rewRule  string  = "";
+    var fmtexec  string  = handy.Which("gofmt");
+
+    if tw != "" { tabWidth = "-tabwidth="+tw; }
+    if noC { comments = "-comments=false"; }
+    if rew != "" { rewRule = rew; argvLen++ ; }
+    if tab { useTabs = "-tabindent=true"; }
+
+    argv = make([]string, 6 + argvLen);
+
+    if fmtexec == "" {
+        fmt.Fprintf(os.Stderr,"[ERROR] could not find: gofmt\n");
+        os.Exit(1);
+    }
+
+    argv[i] = fmtexec;   i++;
+    argv[i] = "-w=true"; i++;
+    argv[i] = tabWidth;  i++;
+    argv[i] = useTabs;   i++;
+    argv[i] = comments;  i++;
+
+    if rewRule != "" {
+        argv[i] = "-r="+rewRule; i++;
+    }
+
+    for fileName := range files.Iter() {
+        argv[i] = fileName;
+        fmt.Printf("gofmt    : %s\n", fileName);
+        _ = handy.StdExecve(argv, true);
+    }
+
+}
+
 func rm865(srcdir string){
 
     // override IncludeFile to make walker pick up only .[865] files
@@ -253,6 +308,10 @@ func printHelp(){
   -b --benchmarks      pass argument to unit-test
   -m --match           pass argument to unit-test
   -V --verbose         pass argument '-v' to unit-test
+  --rw                 pass rewrite rule to gofmt
+  --nc                 pass -comments=false to gofmt
+  --tw                 change -tabwidth=4 (gofmt arg)
+  --tab                pass -tabindent=true to gofmt
   -I                   import package directories
     `;
 
