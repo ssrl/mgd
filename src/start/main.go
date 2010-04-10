@@ -304,15 +304,15 @@ func printHelp(){
   -a --arch            architecture (amd64,arm,386)
   -d --dryrun          print what gd would do (stdout)
   -c --clean           rm *.[a865] from src-directory
+  -I                   import package directories
   -t --test            run all unit-tests
   -b --benchmarks      pass argument to unit-test
   -m --match           pass argument to unit-test
   -V --verbose         pass argument '-v' to unit-test
-  --rw                 pass rewrite rule to gofmt
-  --nc                 pass -comments=false to gofmt
-  --tw                 change -tabwidth=4 (gofmt arg)
-  --tab                pass -tabindent=true to gofmt
-  -I                   import package directories
+  -rw                  pass rewrite rule to gofmt
+  -nc                  pass -comments=false to gofmt
+  -tw                  pass -tabwidth to gofmt (default:4)
+  -tab                 pass -tabindent=true to gofmt
     `;
 
     fmt.Println(helpMSG);
