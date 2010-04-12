@@ -6,14 +6,14 @@ package main
 
 import(
     "os";
-	"fmt";
-	"path";
-	"utilz/walker";
+    "fmt";
+    "path";
+    "utilz/walker";
     "cmplr/compiler";
     "cmplr/dag";
-	"container/vector";
+    "container/vector";
     "parse/gopt";
-	"strings";
+    "strings";
     "utilz/handy";
 )
 
