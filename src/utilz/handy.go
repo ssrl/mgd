@@ -48,7 +48,7 @@ func StdExecve(argv []string, stopOnTrouble bool) (ok bool){
 func Which(cmd string) (string){
 
     var abspath string;
-    var dir *os.Dir;
+    var dir *os.FileInfo;
     var err os.Error;
 
     xpath := os.Getenv("PATH");

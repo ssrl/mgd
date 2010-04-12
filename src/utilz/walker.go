@@ -24,11 +24,11 @@ func newCollect() *collect{
     return c;
 }
 
-func (c *collect) VisitDir (path string, d *os.Dir) bool{
+func (c *collect) VisitDir (path string, d *os.FileInfo) bool{
     return IncludeDir(path);
 }
 
-func (c *collect) VisitFile(path string, d *os.Dir){
+func (c *collect) VisitFile(path string, d *os.FileInfo){
     if IncludeFile(path) {
         c.Files.Push(path);
     }

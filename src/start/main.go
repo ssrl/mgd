@@ -207,7 +207,7 @@ func findFiles(pathname string) *vector.StringVector{
 
 func okDirOrDie(pathname string){
 
-    var dir *os.Dir;
+    var dir *os.FileInfo;
     var staterr  os.Error;
 
     dir, staterr = os.Stat(pathname);
