@@ -69,7 +69,7 @@ func Which(cmd string) (string){
     return "";
 }
 
-func isExecutable(uid uint32, perms int) bool {
+func isExecutable(uid int, perms int) bool {
 
     mode := 7;
     amode := (perms & mode);
