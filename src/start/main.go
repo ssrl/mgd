@@ -309,6 +309,7 @@ func printHelp(){
   -b --benchmarks      pass argument to unit-test
   -m --match           pass argument to unit-test
   -V --verbose         pass argument '-v' to unit-test
+  -f --fmt             run gofmt on source-code 
   -rw                  pass rewrite rule to gofmt
   -nc                  pass -comments=false to gofmt
   -tw                  pass -tabwidth to gofmt (default:4)
