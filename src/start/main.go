@@ -289,10 +289,9 @@ func rm865(srcdir string){
 func printHelp(){
     var helpMSG string =`
   Godag is a compiler front-end for golang,
-  it's main purpose is to help build projects
-  which are pure go code without Makefiles.
-  Hopefully it simplifies a few other things
-  as well in terms of testing and formatting.
+  its main purpose is to help build projects
+  which are pure Go-code without Makefiles.
+  Hopefully it simplifies testing as welll.
 
   usage: gd [OPTIONS] src-directory
 
