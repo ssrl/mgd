@@ -291,7 +291,7 @@ func printHelp(){
   Godag is a compiler front-end for golang,
   its main purpose is to help build projects
   which are pure Go-code without Makefiles.
-  Hopefully it simplifies testing as welll.
+  Hopefully it simplifies testing as well.
 
   usage: gd [OPTIONS] src-directory
 
