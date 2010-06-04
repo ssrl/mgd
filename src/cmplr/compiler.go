@@ -213,7 +213,7 @@ func mainChoice(pkgs *vector.Vector) int{
     i := 0;
     for p := range pkgs.Iter() {
         pk, _ := p.(*dag.Package);
-        fmt.Printf(" press '%d' for: %s\n", i, pk.Name);
+        fmt.Printf(" type %2d  for: %s\n", i, pk.Name);
         i++;
     }
 
