@@ -224,7 +224,7 @@ func mainChoice(pkgs *vector.Vector) int{
     n, e := fmt.Scanf("%d", &choice);
 
     if e != nil { die("%s\n", e); }
-    if n != 1 { die("failed to read input\n");  }
+    if n != 1   { die("failed to read input\n");  }
 
     if choice >= pkgs.Len() || choice < 0 {
         die(" bad choice: %d\n", choice);
