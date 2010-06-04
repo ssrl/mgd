@@ -121,8 +121,10 @@ func (c *Compiler) ForkCompile(pkgs *vector.Vector){
         }
     }
 }
+
 // for removal of temoprary packages created for testing and so on..
 func (c *Compiler) DeletePackages(pkgs *vector.Vector) bool{
+
     var ok = true;
     var e os.Error;
 
@@ -136,11 +138,13 @@ func (c *Compiler) DeletePackages(pkgs *vector.Vector) bool{
                 fmt.Fprintf(os.Stderr,"[ERROR] %s\n",e);
             }
         }
-        pcompile := path.Join(c.root, pkg.Name) + c.suffix;
-        e = os.Remove(pcompile);
-        if e != nil{
-            ok = false;
-            fmt.Fprintf(os.Stderr,"[ERROR] %s\n",e);
+        if ! c.dryrun {
+            pcompile := path.Join(c.root, pkg.Name) + c.suffix;
+            e = os.Remove(pcompile);
+            if e != nil{
+                ok = false;
+                fmt.Fprintf(os.Stderr,"[ERROR] %s\n",e);
+            }
         }
     }
 

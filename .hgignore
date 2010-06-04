@@ -3,3 +3,4 @@ syntax: glob
 *.6
 *.5
 .git*
+gd

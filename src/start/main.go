@@ -52,7 +52,7 @@ func main(){
 
     var files *vector.StringVector;
 
-    var arch, output, srcdir, bmatch, match, rewRule, tabWidth string;
+    var arch, gdtest, output, srcdir, bmatch, match, rewRule, tabWidth string;
     var dryrun, test, testVerbose, static, noComments, tabIndent bool;
     var includes []string = nil;
 
@@ -68,15 +68,16 @@ func main(){
     getopt.BoolOption("-t -test --test");
     getopt.BoolOption("-V -verbose --verbose");
     getopt.BoolOption("-f -fmt --fmt");
-    getopt.BoolOption("-nc --nc");
+    getopt.BoolOption("-no-comments --no-comments");
     getopt.BoolOption("-tab --tab");
     getopt.StringOption("-a -arch --arch -arch= --arch=");
     getopt.StringOption("-I");
-    getopt.StringOption("-tw --tw -tw= --tw=");
-    getopt.StringOption("-rw --rw -rw= --rw=");
+    getopt.StringOption("-tabwidth --tabwidth -tabwidth= --tabwidth=");
+    getopt.StringOption("-rew-rule --rew-rule -rew-rule= --rew-rule=");
     getopt.StringOption("-o -output --output -output= --output=");
     getopt.StringOption("-b -benchmarks --benchmarks -benchmarks= --benchmarks=");
     getopt.StringOption("-m -match --match -match= --match=");
+    getopt.StringOption("-test-bin --test-bin -test-bin= --test-bin=");
 
     args := getopt.Parse(os.Args[1:]);
 
@@ -91,8 +92,8 @@ func main(){
 
     if getopt.IsSet("-help") { printHelp(); os.Exit(0); }
     if getopt.IsSet("-version") { printVersion(); os.Exit(0); }
-    if getopt.IsSet("-clean") { rm865(srcdir); os.Exit(0); }
     if getopt.IsSet("-dryrun"){ dryrun = true; }
+    if getopt.IsSet("-clean") { rm865(srcdir, dryrun); os.Exit(0); }
     if getopt.IsSet("-static"){ static = true; }
     if getopt.IsSet("-verbose"){ testVerbose = true; }
     if getopt.IsSet("-test"){
@@ -107,17 +108,22 @@ func main(){
     if getopt.IsSet("-benchmarks"){ bmatch = getopt.Get("-b"); }
     if getopt.IsSet("-match"){ match = getopt.Get("-m"); }
     if getopt.IsSet("-I"){ includes = getopt.GetMultiple("-I"); }
+    if getopt.IsSet("-test-bin"){
+        gdtest = getopt.Get("-test-bin");
+    }else{
+        gdtest = "gdtest";
+    }
 
 
     files = findFiles(srcdir);
 
 
     if getopt.IsSet("-fmt"){
-        if getopt.IsSet("-nc"){ noComments = true; }
-        if getopt.IsSet("-rw"){ rewRule = getopt.Get("-rw"); }
+        if getopt.IsSet("-no-comments"){ noComments = true; }
+        if getopt.IsSet("-rew-rule"){ rewRule = getopt.Get("-rew-rule"); }
         if getopt.IsSet("-tab"){ tabIndent = true; }
-        if getopt.IsSet("-tw"){ tabWidth = getopt.Get("-tw"); }
-        formatFiles(files, tabIndent, noComments, rewRule, tabWidth);
+        if getopt.IsSet("-tabwidth"){ tabWidth = getopt.Get("-tabwidth"); }
+        formatFiles(files, dryrun, tabIndent, noComments, rewRule, tabWidth);
     }
 
     dgrph := dag.New();
@@ -145,23 +151,25 @@ func main(){
     if test {
         testMain, testDir := dgrph.MakeMainTest(srcdir);
         kompiler.ForkCompile(testMain);
-        kompiler.ForkLink(testMain, "gdtest", false);
+        kompiler.ForkLink(testMain, gdtest, false);
         kompiler.DeletePackages(testMain);
         rmError := os.Remove(testDir);
         if rmError != nil {
             fmt.Fprintf(os.Stderr,"[ERROR] failed to remove testdir: %s\n",testDir);
         }
-        testArgv := createTestArgv("gdtest", bmatch, match, testVerbose);
-        tstring := "testing  : ";
-        if testVerbose { tstring += "\n"; }
-        fmt.Printf(tstring);
-        ok := handy.StdExecve(testArgv, false);
-        e := os.Remove("gdtest");
-        if e != nil{
-            fmt.Fprintf(os.Stderr,"[ERROR] %s\n",e);
-        }
-        if ! ok {
-            os.Exit(1);
+        testArgv := createTestArgv(gdtest, bmatch, match, testVerbose);
+        if ! dryrun {
+            tstring := "testing  : ";
+            if testVerbose { tstring += "\n"; }
+            fmt.Printf(tstring);
+            ok := handy.StdExecve(testArgv, false);
+            e := os.Remove(gdtest);
+            if e != nil{
+                fmt.Fprintf(os.Stderr,"[ERROR] %s\n",e);
+            }
+            if ! ok {
+                os.Exit(1);
+            }
         }
     }
 
@@ -221,7 +229,7 @@ func okDirOrDie(pathname string){
     }
 }
 
-func formatFiles(files *vector.StringVector, tab, noC bool, rew, tw string){
+func formatFiles(files *vector.StringVector, dryrun, tab, noC bool, rew, tw string){
 
     var i int = 0;
     var argvLen int = 0;
@@ -256,13 +264,17 @@ func formatFiles(files *vector.StringVector, tab, noC bool, rew, tw string){
 
     for fileName := range files.Iter() {
         argv[i] = fileName;
-        fmt.Printf("gofmt    : %s\n", fileName);
-        _ = handy.StdExecve(argv, true);
+        if ! dryrun {
+            fmt.Printf("gofmt    : %s\n", fileName);
+            _ = handy.StdExecve(argv, true);
+        }else{
+            fmt.Printf(" %s\n",strings.Join(argv, " "));
+        }
     }
 
 }
 
-func rm865(srcdir string){
+func rm865(srcdir string, dryrun bool){
 
     // override IncludeFile to make walker pick up only .[865] files
     walker.IncludeFile = func(s string)bool{
@@ -279,9 +291,11 @@ func rm865(srcdir string){
 
     for s := range compiled.Iter() {
         fmt.Printf("rm: %s\n", s);
-        e := os.Remove(s);
-        if e != nil {
-            fmt.Fprintf(os.Stderr,"[ERROR] could not delete file: %s\n",s);
+        if ! dryrun {
+            e := os.Remove(s);
+            if e != nil {
+                fmt.Fprintf(os.Stderr,"[ERROR] could not delete file: %s\n",s);
+            }
         }
     }
 }
@@ -311,11 +325,11 @@ func printHelp(){
   -b --benchmarks      pass argument to unit-test
   -m --match           pass argument to unit-test
   -V --verbose         pass argument '-v' to unit-test
-  -f --fmt             run gofmt on source-code 
-  -rw                  pass rewrite rule to gofmt
-  -nc                  pass -comments=false to gofmt
-  -tw                  pass -tabwidth to gofmt (default:4)
-  -tab                 pass -tabindent=true to gofmt
+  -f --fmt             run gofmt on source-code
+  --rew-rule           pass rewrite rule to gofmt
+  --tab                pass -tabindent=true to gofmt
+  --tabwidth           pass -tabwidth to gofmt (default:4)
+  --no-comments        pass -comments=false to gofmt
     `;
 
     fmt.Println(helpMSG);
