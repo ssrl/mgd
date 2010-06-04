@@ -29,7 +29,7 @@ func newStringOption(op []string) *StringOption{
     return s;
 }
 
-func (s StringOption) isSet() bool{
+func (s *StringOption) isSet() bool{
     return s.count > 0;
 }
 
@@ -96,7 +96,7 @@ func newBoolOption(op []string) *BoolOption{
     return b;
 }
 
-func (b BoolOption) isSet() bool{
+func (b *BoolOption) isSet() bool{
     return b.value;
 }
 
