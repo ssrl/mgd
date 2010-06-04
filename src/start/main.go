@@ -92,38 +92,39 @@ func main(){
 
     if getopt.IsSet("-help") { printHelp(); os.Exit(0); }
     if getopt.IsSet("-version") { printVersion(); os.Exit(0); }
-    if getopt.IsSet("-dryrun"){ dryrun = true; }
-    if getopt.IsSet("-clean") { rm865(srcdir, dryrun); os.Exit(0); }
-    if getopt.IsSet("-static"){ static = true; }
-    if getopt.IsSet("-verbose"){ testVerbose = true; }
-    if getopt.IsSet("-test"){
-        test = true;
-        findTestFilesAlso();
-    }
 
     gotRoot();//?
 
+    if getopt.IsSet("-dryrun"){ dryrun = true; }
+    if getopt.IsSet("-clean") { rm865(srcdir, dryrun); os.Exit(0); }
+    if getopt.IsSet("-static"){ static = true; }
     if getopt.IsSet("-arch"){ arch = getopt.Get("-a"); }
-    if getopt.IsSet("-output"){ output = getopt.Get("-o"); }
-    if getopt.IsSet("-benchmarks"){ bmatch = getopt.Get("-b"); }
-    if getopt.IsSet("-match"){ match = getopt.Get("-m"); }
     if getopt.IsSet("-I"){ includes = getopt.GetMultiple("-I"); }
+    if getopt.IsSet("-output"){ output = getopt.Get("-o"); }
+
     if getopt.IsSet("-test-bin"){
         gdtest = getopt.Get("-test-bin");
     }else{
         gdtest = "gdtest";
     }
 
+    // for gotest
+    if getopt.IsSet("-test"){ test = true; findTestFilesAlso(); }
+    if getopt.IsSet("-benchmarks"){ bmatch = getopt.Get("-b"); }
+    if getopt.IsSet("-match"){ match = getopt.Get("-m"); }
+    if getopt.IsSet("-verbose"){ testVerbose = true; }
+    // for gofmt
+    if getopt.IsSet("-no-comments"){ noComments = true; }
+    if getopt.IsSet("-rew-rule"){ rewRule = getopt.Get("-rew-rule"); }
+    if getopt.IsSet("-tab"){ tabIndent = true; }
+    if getopt.IsSet("-tabwidth"){ tabWidth = getopt.Get("-tabwidth"); }
+
 
     files = findFiles(srcdir);
 
-
     if getopt.IsSet("-fmt"){
-        if getopt.IsSet("-no-comments"){ noComments = true; }
-        if getopt.IsSet("-rew-rule"){ rewRule = getopt.Get("-rew-rule"); }
-        if getopt.IsSet("-tab"){ tabIndent = true; }
-        if getopt.IsSet("-tabwidth"){ tabWidth = getopt.Get("-tabwidth"); }
         formatFiles(files, dryrun, tabIndent, noComments, rewRule, tabWidth);
+        os.Exit(0);
     }
 
     dgrph := dag.New();
@@ -325,7 +326,7 @@ func printHelp(){
   -b --benchmarks      pass argument to unit-test
   -m --match           pass argument to unit-test
   -V --verbose         pass argument '-v' to unit-test
-  -f --fmt             run gofmt on source-code
+  -f --fmt             run gofmt on src and exit
   --rew-rule           pass rewrite rule to gofmt
   --tab                pass -tabindent=true to gofmt
   --tabwidth           pass -tabwidth to gofmt (default:4)
