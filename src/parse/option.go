@@ -6,6 +6,7 @@ package gopt
 
 type Option interface{
     isSet() bool;
+    reset();
 }
 
 type StringOption struct{
@@ -31,6 +32,11 @@ func newStringOption(op []string) *StringOption{
 
 func (s *StringOption) isSet() bool{
     return s.count > 0;
+}
+
+func (s *StringOption) reset(){
+    s.values = make([]string, 5);
+    s.count  = 0;
 }
 
 func indexOf(s1, s2 string) int{
@@ -98,6 +104,10 @@ func newBoolOption(op []string) *BoolOption{
 
 func (b *BoolOption) isSet() bool{
     return b.value;
+}
+
+func (b *BoolOption) reset(){
+    b.value = false;
 }
 
 func (b *BoolOption) setFlag(){

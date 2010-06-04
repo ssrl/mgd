@@ -113,6 +113,12 @@ func (g *GetOpt) Get(o string) string{
     return sopt.values[0];
 }
 
+func (g *GetOpt) Reset() {
+    for _, v := range g.cache {
+        v.reset();
+    }
+}
+
 func (g *GetOpt) GetMultiple(o string) []string{
 
     sopt := g.getStringOption(o);

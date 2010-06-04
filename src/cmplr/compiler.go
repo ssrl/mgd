@@ -153,6 +153,8 @@ func (c *Compiler) DeletePackages(pkgs *vector.Vector) bool{
 
 func (c *Compiler) ForkLink(pkgs *vector.Vector, output string, static bool){
 
+    var mainPKG *dag.Package;
+
     gotMain := new(vector.Vector);
 
     for p := range pkgs.Iter() {
@@ -167,17 +169,18 @@ func (c *Compiler) ForkLink(pkgs *vector.Vector, output string, static bool){
     }
 
     if gotMain.Len() > 1 {
-        die("[ERROR] (linking) more than one main package found\n");
+        choice := mainChoice( gotMain );
+        mainPKG, _ = gotMain.At( choice ).(*dag.Package);
+    }else{
+        mainPKG, _ = gotMain.Pop().(*dag.Package);
     }
 
     includeLen := c.extraPkgIncludes();
     staticXtra := 0;
     if static { staticXtra++; }
 
-    pkg, _ := gotMain.Pop().(*dag.Package);
-
     linker := findLinker(c.arch);
-    compiled := path.Join(c.root, pkg.Name) + c.suffix;
+    compiled := path.Join(c.root, mainPKG.Name) + c.suffix;
 
     argv := make([]string, 6 + (includeLen*2) + staticXtra);
     i    := 0;
@@ -201,6 +204,35 @@ func (c *Compiler) ForkLink(pkgs *vector.Vector, output string, static bool){
         fmt.Println("linking  :",output);
         handy.StdExecve(argv, true);
     }
+}
+
+func mainChoice(pkgs *vector.Vector) int{
+
+    fmt.Println("\n More than one main package found\n");
+
+    i := 0;
+    for p := range pkgs.Iter() {
+        pk, _ := p.(*dag.Package);
+        fmt.Printf(" press '%d' for: %s\n", i, pk.Name);
+        i++;
+    }
+
+    var choice int;
+
+    fmt.Printf("\n type your choice: ");
+
+    n, e := fmt.Scanf("%d", &choice);
+
+    if e != nil { die("%s\n", e); }
+    if n != 1 { die("failed to read input\n");  }
+
+    if choice >= pkgs.Len() || choice < 0 {
+        die(" bad choice: %d\n", choice);
+    }
+
+    fmt.Printf(" chosen main-package: %s\n\n", pkgs.At( choice ).(*dag.Package).Name);
+
+    return choice;
 }
 
 func die(strfmt string, v ...interface{}){
