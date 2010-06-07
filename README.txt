@@ -5,7 +5,8 @@ This program will hopefully make it easier to compile
 source code in the go programming language.
 A dependency graph is constructed from imports, this
 is sorted with a topological sort to figure out legal
-compile order.
+compile order. [865]g and [865]l is used to compile and
+link program. Testing and formatting is also automated.
 
 
 Build:

@@ -30,10 +30,13 @@ function clean(){
     cd $HERE
     rm -rf src/utilz/walker.?
     rm -rf src/utilz/stringset.?
+    rm -rf src/utilz/stringbuffer.?
+    rm -rf src/utilz/utilz_test.?
     rm -rf src/utilz/handy.?
     rm -rf src/cmplr/dag.?
     rm -rf src/cmplr/compiler.?
     rm -rf src/parse/gopt.?
+    rm -rf src/parse/gopt_test.?
     rm -rf src/parse/option.?
     rm -rf src/start/main.?
     rm -rf gd

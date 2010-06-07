@@ -1,259 +1,293 @@
-// © Knug Industries 2009 all rights reserved 
+// © Knug Industries 2009 all rights reserved
 // GNU GENERAL PUBLIC LICENSE VERSION 3.0
 // Author bjarneh@ifi.uio.no
 
 package compiler
 
-import(
-    "os";
-    "container/vector";
-    "fmt";
-    "utilz/handy";
-    "cmplr/dag";
-    "path";
+import (
+    "os"
+    "container/vector"
+    "fmt"
+    "utilz/handy"
+    "cmplr/dag"
+    "path"
 )
 
 
-type Compiler struct{
-    root, arch, suffix, executable string;
-    dryrun bool;
-    includes []string;
+type Compiler struct {
+    root, arch, suffix, executable string
+    dryrun                         bool
+    includes                       []string
 }
 
-func New(root, arch string, dryrun bool,include []string) *Compiler{
-    c                := new(Compiler);
-    c.root           = root;
-    c.arch, c.suffix = archNsuffix(arch);
-    c.executable     = findCompiler(c.arch);
-    c.dryrun         = dryrun;
-    c.includes       = include;
-    return c;
+func New(root, arch string, dryrun bool, include []string) *Compiler {
+    c := new(Compiler)
+    c.root = root
+    c.arch, c.suffix = archNsuffix(arch)
+    c.executable = findCompiler(c.arch)
+    c.dryrun = dryrun
+    c.includes = include
+    return c
 }
 
-func findCompiler(arch string) string{
+func findCompiler(arch string) string {
 
-    var lookingFor string;
+    var lookingFor string
     switch arch {
-        case "arm"  : lookingFor = "5g";
-        case "amd64": lookingFor = "6g";
-        case "386"  : lookingFor = "8g";
+    case "arm":
+        lookingFor = "5g"
+    case "amd64":
+        lookingFor = "6g"
+    case "386":
+        lookingFor = "8g"
     }
 
-    real := handy.Which(lookingFor);
+    real := handy.Which(lookingFor)
     if real == "" {
-        die("[ERROR] could not find compiler\n");
+        die("[ERROR] could not find compiler\n")
     }
-    return real;
+    return real
 }
 
-func findLinker(arch string) string{
+func findLinker(arch string) string {
 
-    var lookingFor string;
+    var lookingFor string
     switch arch {
-        case "arm"  : lookingFor = "5l";
-        case "amd64": lookingFor = "6l";
-        case "386"  : lookingFor = "8l";
+    case "arm":
+        lookingFor = "5l"
+    case "amd64":
+        lookingFor = "6l"
+    case "386":
+        lookingFor = "8l"
     }
 
-    real := handy.Which(lookingFor);
+    real := handy.Which(lookingFor)
     if real == "" {
-        die("[ERROR] could not find linker\n");
+        die("[ERROR] could not find linker\n")
     }
-    return real;
+    return real
 }
 
 
-func archNsuffix(arch string)(a, s string){
+func archNsuffix(arch string) (a, s string) {
 
     if arch == "" {
-        a = os.Getenv("GOARCH");
-    }else{
-        a = arch;
+        a = os.Getenv("GOARCH")
+    } else {
+        a = arch
     }
 
     switch a {
-        case "arm"  : s = ".5";
-        case "amd64": s = ".6";
-        case "386"  : s = ".8";
-        default     : die("[ERROR] unknown architecture: %s\n",a);
+    case "arm":
+        s = ".5"
+    case "amd64":
+        s = ".6"
+    case "386":
+        s = ".8"
+    default:
+        die("[ERROR] unknown architecture: %s\n", a)
     }
 
-    return a, s;
+    return a, s
 }
 
-func (c *Compiler) String() string{
-    s := "Compiler{ root=%s, arch=%s, suffix=%s, executable=%s }";
-    return fmt.Sprintf(s, c.root, c.arch, c.suffix, c.executable);
+func (c *Compiler) String() string {
+    s := "Compiler{ root=%s, arch=%s, suffix=%s, executable=%s }"
+    return fmt.Sprintf(s, c.root, c.arch, c.suffix, c.executable)
 }
 
 
-func (c *Compiler) ForkCompile(pkgs *vector.Vector){
+func (c *Compiler) ForkCompile(pkgs *vector.Vector) {
 
-    includeLen := c.extraPkgIncludes();
+    includeLen := c.extraPkgIncludes()
 
     for p := range pkgs.Iter() {
-        pkg, _ := p.(*dag.Package);//safe cast, only Packages there
+        pkg, _ := p.(*dag.Package) //safe cast, only Packages there
 
-        argv := make([]string, 5 + pkg.Files.Len() + (includeLen*2));
-        i    := 0;
-        argv[i] = c.executable; i++;
-        argv[i] = "-I"; i++;
-        argv[i] = c.root; i++;
+        argv := make([]string, 5+pkg.Files.Len()+(includeLen*2))
+        i := 0
+        argv[i] = c.executable
+        i++
+        argv[i] = "-I"
+        i++
+        argv[i] = c.root
+        i++
         if includeLen > 0 {
-            for y := 0; y < includeLen; y ++ {
-                argv[i] = "-I"; i++;
-                argv[i] = c.includes[y]; i++;
+            for y := 0; y < includeLen; y++ {
+                argv[i] = "-I"
+                i++
+                argv[i] = c.includes[y]
+                i++
             }
         }
-        argv[i] = "-o"; i++;
-        argv[i] = path.Join(c.root, pkg.Name) + c.suffix; i++;
+        argv[i] = "-o"
+        i++
+        argv[i] = path.Join(c.root, pkg.Name) + c.suffix
+        i++
 
         for f := range pkg.Files.Iter() {
-            argv[i] = f;
-            i++;
+            argv[i] = f
+            i++
         }
 
         if c.dryrun {
-            dryRun(argv);
-        }else{
-            fmt.Println("compiling:",pkg.Name);
-            handy.StdExecve(argv, true);
+            dryRun(argv)
+        } else {
+            fmt.Println("compiling:", pkg.Name)
+            handy.StdExecve(argv, true)
         }
     }
 }
 
 // for removal of temoprary packages created for testing and so on..
-func (c *Compiler) DeletePackages(pkgs *vector.Vector) bool{
+func (c *Compiler) DeletePackages(pkgs *vector.Vector) bool {
 
-    var ok = true;
-    var e os.Error;
+    var ok = true
+    var e os.Error
 
     for p := range pkgs.Iter() {
-        pkg, _ := p.(*dag.Package);//safe cast, only Packages there
+        pkg, _ := p.(*dag.Package) //safe cast, only Packages there
 
-        for f := range pkg.Files.Iter(){
-            e = os.Remove(f);
-            if e != nil{
-                ok = false;
-                fmt.Fprintf(os.Stderr,"[ERROR] %s\n",e);
+        for f := range pkg.Files.Iter() {
+            e = os.Remove(f)
+            if e != nil {
+                ok = false
+                fmt.Fprintf(os.Stderr, "[ERROR] %s\n", e)
             }
         }
-        if ! c.dryrun {
-            pcompile := path.Join(c.root, pkg.Name) + c.suffix;
-            e = os.Remove(pcompile);
-            if e != nil{
-                ok = false;
-                fmt.Fprintf(os.Stderr,"[ERROR] %s\n",e);
+        if !c.dryrun {
+            pcompile := path.Join(c.root, pkg.Name) + c.suffix
+            e = os.Remove(pcompile)
+            if e != nil {
+                ok = false
+                fmt.Fprintf(os.Stderr, "[ERROR] %s\n", e)
             }
         }
     }
 
-    return ok;
+    return ok
 }
 
-func (c *Compiler) ForkLink(pkgs *vector.Vector, output string, static bool){
+func (c *Compiler) ForkLink(pkgs *vector.Vector, output string, static bool) {
 
-    var mainPKG *dag.Package;
+    var mainPKG *dag.Package
 
-    gotMain := new(vector.Vector);
+    gotMain := new(vector.Vector)
 
     for p := range pkgs.Iter() {
-        pk, _ := p.(*dag.Package);
+        pk, _ := p.(*dag.Package)
         if pk.ShortName == "main" {
-            gotMain.Push( pk );
+            gotMain.Push(pk)
         }
     }
 
     if gotMain.Len() == 0 {
-        die("[ERROR] (linking) no main package found\n");
+        die("[ERROR] (linking) no main package found\n")
     }
 
     if gotMain.Len() > 1 {
-        choice := mainChoice( gotMain );
-        mainPKG, _ = gotMain.At( choice ).(*dag.Package);
-    }else{
-        mainPKG, _ = gotMain.Pop().(*dag.Package);
+        choice := mainChoice(gotMain)
+        mainPKG, _ = gotMain.At(choice).(*dag.Package)
+    } else {
+        mainPKG, _ = gotMain.Pop().(*dag.Package)
     }
 
-    includeLen := c.extraPkgIncludes();
-    staticXtra := 0;
-    if static { staticXtra++; }
+    includeLen := c.extraPkgIncludes()
+    staticXtra := 0
+    if static {
+        staticXtra++
+    }
 
-    linker := findLinker(c.arch);
-    compiled := path.Join(c.root, mainPKG.Name) + c.suffix;
+    linker := findLinker(c.arch)
+    compiled := path.Join(c.root, mainPKG.Name) + c.suffix
 
-    argv := make([]string, 6 + (includeLen*2) + staticXtra);
-    i    := 0;
-    argv[i] = linker; i++;
-    argv[i] = "-o"; i++;
-    argv[i] = output; i++;
-    argv[i] = "-L"; i++;
-    argv[i] = c.root; i++;
-    if static { argv[i] = "-d"; i++; }
-    if includeLen > 0{
+    argv := make([]string, 6+(includeLen*2)+staticXtra)
+    i := 0
+    argv[i] = linker
+    i++
+    argv[i] = "-o"
+    i++
+    argv[i] = output
+    i++
+    argv[i] = "-L"
+    i++
+    argv[i] = c.root
+    i++
+    if static {
+        argv[i] = "-d"
+        i++
+    }
+    if includeLen > 0 {
         for y := 0; y < includeLen; y++ {
-            argv[i] = "-L"; i++;
-            argv[i] = c.includes[y]; i++;
+            argv[i] = "-L"
+            i++
+            argv[i] = c.includes[y]
+            i++
         }
     }
-    argv[i] = compiled; i++;
+    argv[i] = compiled
+    i++
 
     if c.dryrun {
-        dryRun(argv);
-    }else{
-        fmt.Println("linking  :",output);
-        handy.StdExecve(argv, true);
+        dryRun(argv)
+    } else {
+        fmt.Println("linking  :", output)
+        handy.StdExecve(argv, true)
     }
 }
 
-func mainChoice(pkgs *vector.Vector) int{
+func mainChoice(pkgs *vector.Vector) int {
 
-    fmt.Println("\n More than one main package found\n");
+    fmt.Println("\n More than one main package found\n")
 
-    i := 0;
+    i := 0
     for p := range pkgs.Iter() {
-        pk, _ := p.(*dag.Package);
-        fmt.Printf(" type %2d  for: %s\n", i, pk.Name);
-        i++;
+        pk, _ := p.(*dag.Package)
+        fmt.Printf(" type %2d  for: %s\n", i, pk.Name)
+        i++
     }
 
-    var choice int;
+    var choice int
 
-    fmt.Printf("\n type your choice: ");
+    fmt.Printf("\n type your choice: ")
 
-    n, e := fmt.Scanf("%d", &choice);
+    n, e := fmt.Scanf("%d", &choice)
 
-    if e != nil { die("%s\n", e); }
-    if n != 1   { die("failed to read input\n");  }
+    if e != nil {
+        die("%s\n", e)
+    }
+    if n != 1 {
+        die("failed to read input\n")
+    }
 
     if choice >= pkgs.Len() || choice < 0 {
-        die(" bad choice: %d\n", choice);
+        die(" bad choice: %d\n", choice)
     }
 
-    fmt.Printf(" chosen main-package: %s\n\n", pkgs.At( choice ).(*dag.Package).Name);
+    fmt.Printf(" chosen main-package: %s\n\n", pkgs.At(choice).(*dag.Package).Name)
 
-    return choice;
+    return choice
 }
 
-func die(strfmt string, v ...interface{}){
-    fmt.Fprintf(os.Stderr, strfmt, v);
-    os.Exit(1);
+func die(strfmt string, v ...interface{}) {
+    fmt.Fprintf(os.Stderr, strfmt, v)
+    os.Exit(1)
 }
 
 
-func dryRun(argv []string){
-    var cmd string;
+func dryRun(argv []string) {
+    var cmd string
 
     for i := 0; i < len(argv); i++ {
-        cmd = fmt.Sprintf("%s %s ", cmd, argv[i]);
+        cmd = fmt.Sprintf("%s %s ", cmd, argv[i])
     }
 
-    fmt.Printf("%s || exit 1\n",cmd);
+    fmt.Printf("%s || exit 1\n", cmd)
 }
 
-func (c *Compiler) extraPkgIncludes() int{
+func (c *Compiler) extraPkgIncludes() int {
     if c.includes != nil && len(c.includes) > 0 {
-        return len(c.includes);
+        return len(c.includes)
     }
-    return 0;
+    return 0
 }
