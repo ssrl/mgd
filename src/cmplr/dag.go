@@ -99,7 +99,7 @@ func (d *Dag) GraphBuilder(includes []string) {
                 d.addEdge(dep, k)
                 ///                 fmt.Printf("local:  %s \n", dep);
             } else if !d.stdlibDependency(goRoot, dep) {
-                if includes == nil || len(includes) > 0 {
+                if includes == nil || len(includes) == 0 {
                     fmt.Fprintf(os.Stderr, "[ERROR] Dependency: %s not found\n", dep)
                     fmt.Fprintf(os.Stderr, "[ERROR] Did you use actual src-root?\n")
                     os.Exit(1)

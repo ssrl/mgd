@@ -173,6 +173,8 @@ func main() {
     gotRoot();//?
 
 
+    fmt.Printf("includes: %v\n", includes);
+
     // sort graph based on dependencies
     dgrph.GraphBuilder(includes)
     sorted := dgrph.Topsort()
