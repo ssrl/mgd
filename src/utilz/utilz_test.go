@@ -49,6 +49,10 @@ func TestStringBuffer(t *testing.T) {
     if ss.Len() != 4 {
         t.Fatal(" stringset.Len() != 4\n")
     }
+    ss.Add("øæå"); // utf-8 multi-byte fun
+    if ss.Len() != 10 {
+        t.Fatal(" stringset.Len() != 10\n");
+    }
     ss.ClearSize(5)
     if ss.Len() != 0 {
         t.Fatal(" stringset.Len() != 0\n")
