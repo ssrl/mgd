@@ -53,6 +53,9 @@ func TestStringBuffer(t *testing.T) {
     if ss.Len() != 10 {
         t.Fatal(" stringset.Len() != 10\n");
     }
+    if ss.String() != "entoøæå" {
+        t.Fatal(" stringset.String() != 'entoøæå'\n");
+    }
     ss.ClearSize(5)
     if ss.Len() != 0 {
         t.Fatal(" stringset.Len() != 0\n")
