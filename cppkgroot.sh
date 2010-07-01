@@ -111,7 +111,7 @@ function recursive_copy {
 }
 
 
-echo "cp *.go files: $SRCROOT  ->  $CPROOT"
+echo "cp *.go: $SRCROOT  ->  $CPROOT"
 echo "this may take some time..."
 
 for p in "${package[@]}";
