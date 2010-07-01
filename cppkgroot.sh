@@ -3,6 +3,24 @@
 # GNU GENERAL PUBLIC LICENSE VERSION 3.0
 # Author bjarneh@ifi.uio.no
 
+function phelp(){
+cat <<EOH
+
+create a copy of the standard library
+with some modifications to be able to 
+compile it without makefiles.
+
+EOH
+}
+
+
+case $1 in
+    '-h' | '-help' | '--help' | 'help')
+    phelp
+    exit 0
+esac
+
+
 # this is the name of our copy of the
 # pure go source root
 CPROOT=`date +"tmp-pkgroot-%s"`
