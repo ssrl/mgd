@@ -21,18 +21,15 @@ case $1 in
 esac
 
 
-# this is the name of our copy of the
-# pure go source root
-CPROOT=`date +"tmp-pkgroot-%s"`
-mkdir "$CPROOT";
-
-
 if [ ! "$GOROOT" ]; then
     echo "Missing \$GOROOT variable, will die now.."
     exit 1
 fi
 
-# $GOROOT
+CPROOT=`date +"tmp-pkgroot-%s"`
+mkdir "$CPROOT";
+
+
 SRCROOT="$GOROOT/src/pkg"
 
 # array to store packages which are pure go
@@ -114,6 +111,8 @@ function recursive_copy {
 }
 
 
+echo "cp *.go files: $SRCROOT  ->  $CPROOT"
+echo "this may take some time..."
 
 for p in "${package[@]}";
 do
