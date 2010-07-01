@@ -55,7 +55,6 @@ package=(
 'flag'
 'fmt'
 'go'
-## 'gob'
 'hash'
 'http'
 'image'
