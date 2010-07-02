@@ -56,7 +56,7 @@ func Which(cmd string) string {
     var err os.Error
 
     xpath := os.Getenv("PATH")
-    dirs := strings.Split(xpath, ":", 0)
+    dirs := strings.Split(xpath, ":", -1)
 
     for i := range dirs {
         abspath = path.Join(dirs[i], cmd)

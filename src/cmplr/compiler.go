@@ -42,11 +42,11 @@ func findCompiler(arch string) string {
         lookingFor = "8g"
     }
 
-    real := handy.Which(lookingFor)
-    if real == "" {
+    fullPath := handy.Which(lookingFor)
+    if fullPath == "" {
         die("[ERROR] could not find compiler\n")
     }
-    return real
+    return fullPath
 }
 
 func findLinker(arch string) string {
@@ -61,11 +61,11 @@ func findLinker(arch string) string {
         lookingFor = "8l"
     }
 
-    real := handy.Which(lookingFor)
-    if real == "" {
+    fullPath := handy.Which(lookingFor)
+    if fullPath == "" {
         die("[ERROR] could not find linker\n")
     }
-    return real
+    return fullPath
 }
 
 
