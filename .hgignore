@@ -6,3 +6,4 @@ syntax: glob
 gd
 mklib.sh
 example
+tmp-pkgroot-*

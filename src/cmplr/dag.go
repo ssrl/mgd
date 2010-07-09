@@ -97,7 +97,7 @@ func (d *Dag) GraphBuilder(includes []string) {
 
             if d.localDependency(dep) {
                 d.addEdge(dep, k)
-                ///                 fmt.Printf("local:  %s \n", dep);
+                /// fmt.Printf("local:  %s \n", dep);
             } else if !d.stdlibDependency(goRoot, dep) {
                 if includes == nil || len(includes) == 0 {
                     fmt.Fprintf(os.Stderr, "[ERROR] Dependency: %s not found\n", dep)
