@@ -44,7 +44,6 @@ package=(
 'cmath'
 'compress'
 'container'
-'crypto'
 'ebnf'
 'encoding'
 'exec'

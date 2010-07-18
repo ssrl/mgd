@@ -179,8 +179,8 @@ func main() {
 
     // print packages sorted, if that's what's desired
     if sortInfo {
-        for pkg := range sorted.Iter() {
-            rpkg, _ := pkg.(*dag.Package)
+        for i := 0; i < sorted.Len(); i++ {
+            rpkg, _ := sorted.At(i).(*dag.Package)
             fmt.Printf("%s\n", rpkg.Name)
         }
         os.Exit(0)
@@ -492,10 +492,10 @@ func formatFiles(files *vector.StringVector, dryrun, tab, noC bool, rew, tw stri
         i++
     }
 
-    for fileName := range files.Iter() {
-        argv[i] = fileName
+    for y := 0; y < files.Len(); y++ {
+        argv[i] = files.At(y)
         if !dryrun {
-            fmt.Printf("gofmt : %s\n", fileName)
+            fmt.Printf("gofmt : %s\n", files.At(y))
             _ = handy.StdExecve(argv, true)
         } else {
             fmt.Printf(" %s\n", strings.Join(argv, " "))
@@ -519,15 +519,15 @@ func rm865(srcdir string, dryrun bool) {
 
     compiled := walker.PathWalk(path.Clean(srcdir))
 
-    for s := range compiled.Iter() {
+    for i := 0; i < compiled.Len(); i++ {
         if !dryrun {
-            fmt.Printf("rm: %s\n", s)
-            e := os.Remove(s)
+            fmt.Printf("rm: %s\n", compiled.At(i))
+            e := os.Remove(compiled.At(i))
             if e != nil {
-                fmt.Fprintf(os.Stderr, "[ERROR] could not delete file: %s\n", s)
+                fmt.Fprintf(os.Stderr, "[ERROR] could not delete file: %s\n", compiled.At(i))
             }
         } else {
-            fmt.Printf("[dryrun] rm: %s\n", s)
+            fmt.Printf("[dryrun] rm: %s\n", compiled.At(i))
         }
     }
 }

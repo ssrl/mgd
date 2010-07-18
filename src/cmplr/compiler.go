@@ -101,8 +101,8 @@ func (c *Compiler) ForkCompile(pkgs *vector.Vector) {
 
     includeLen := c.extraPkgIncludes()
 
-    for p := range pkgs.Iter() {
-        pkg, _ := p.(*dag.Package) //safe cast, only Packages there
+    for y := 0; y < pkgs.Len(); y++ {
+        pkg, _ := pkgs.At(y).(*dag.Package) //safe cast, only Packages there
 
         argv := make([]string, 5+pkg.Files.Len()+(includeLen*2))
         i := 0
@@ -125,8 +125,8 @@ func (c *Compiler) ForkCompile(pkgs *vector.Vector) {
         argv[i] = path.Join(c.root, pkg.Name) + c.suffix
         i++
 
-        for f := range pkg.Files.Iter() {
-            argv[i] = f
+        for z := 0; z < pkg.Files.Len(); z++ {
+            argv[i] = pkg.Files.At(z)
             i++
         }
 
@@ -145,11 +145,11 @@ func (c *Compiler) DeletePackages(pkgs *vector.Vector) bool {
     var ok = true
     var e os.Error
 
-    for p := range pkgs.Iter() {
-        pkg, _ := p.(*dag.Package) //safe cast, only Packages there
+    for i := 0; i < pkgs.Len(); i++ {
+        pkg, _ := pkgs.At(i).(*dag.Package) //safe cast, only Packages there
 
-        for f := range pkg.Files.Iter() {
-            e = os.Remove(f)
+        for y := 0; y < pkg.Files.Len(); y++ {
+            e = os.Remove(pkg.Files.At(y))
             if e != nil {
                 ok = false
                 fmt.Fprintf(os.Stderr, "[ERROR] %s\n", e)
@@ -174,8 +174,8 @@ func (c *Compiler) ForkLink(pkgs *vector.Vector, output string, static bool) {
 
     gotMain := new(vector.Vector)
 
-    for p := range pkgs.Iter() {
-        pk, _ := p.(*dag.Package)
+    for i := 0; i < pkgs.Len(); i++ {
+        pk, _ := pkgs.At(i).(*dag.Package)
         if pk.ShortName == "main" {
             gotMain.Push(pk)
         }
@@ -240,11 +240,9 @@ func mainChoice(pkgs *vector.Vector) int {
 
     fmt.Println("\n More than one main package found\n")
 
-    i := 0
-    for p := range pkgs.Iter() {
-        pk, _ := p.(*dag.Package)
+    for i := 0; i < pkgs.Len(); i++ {
+        pk, _ := pkgs.At(i).(*dag.Package)
         fmt.Printf(" type %2d  for: %s\n", i, pk.Name)
-        i++
     }
 
     var choice int

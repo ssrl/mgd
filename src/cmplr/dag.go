@@ -58,8 +58,11 @@ func (d *Dag) Parse(root string, sv *vector.StringVector) {
 
     root = addSeparatorPath(root)
 
-    for e := range sv.Iter() {
+    var e string;
+    var max int = sv.Len()
 
+    for i := 0; i < max; i++ {
+        e = sv.At(i)
         tree := getSyntaxTreeOrDie(e, parser.ImportsOnly)
         dir, _ := path.Split(e)
         unroot := dir[len(root):len(dir)]
@@ -111,7 +114,7 @@ func (d *Dag) GraphBuilder(includes []string) {
 
 func (d *Dag) MakeMainTest(root string) (*vector.Vector, string) {
 
-    var max, rwxr_xr_x int
+    var max, rwxr_xr_x, i int
     var isTest bool
     var sname, tmpdir, tmpstub, tmpfile string
     rwxr_xr_x = 493
@@ -135,15 +138,16 @@ func (d *Dag) MakeMainTest(root string) (*vector.Vector, string) {
 
         if max > 5 && sname[max-5:] == "_test" {
             collector := newTestCollector()
-            for elm := range v.Files.Iter() {
-                tree := getSyntaxTreeOrDie(elm, 0)
+            for i = 0; i < v.Files.Len(); i++ {
+                tree := getSyntaxTreeOrDie(v.Files.At(i), 0)
                 ast.Walk(collector, tree)
             }
 
             if collector.Names.Len() > 0 {
                 isTest = true
                 sbImports.Add(fmt.Sprintf("import \"%s\";\n", v.Name))
-                for testFunc := range collector.Names.Iter() {
+                for i = 0; i < collector.Names.Len(); i++ {
+                    testFunc := collector.Names.At(i)
                     if len(testFunc) > 4 && testFunc[0:4] == "Test" {
                         sbTests.Add(fmt.Sprintf("testing.Test{\"%s.%s\", %s.%s },\n",
                             sname, testFunc, sname, testFunc))
@@ -160,7 +164,8 @@ func (d *Dag) MakeMainTest(root string) (*vector.Vector, string) {
 
             collector := newTestCollector()
 
-            for fname := range v.Files.Iter() {
+            for i = 0; i < v.Files.Len(); i++ {
+                fname := v.Files.At(i)
                 if len(fname) > 8 && fname[len(fname)-8:] == "_test.go" {
                     tree := getSyntaxTreeOrDie(fname, 0)
                     ast.Walk(collector, tree)
@@ -169,7 +174,8 @@ func (d *Dag) MakeMainTest(root string) (*vector.Vector, string) {
 
             if collector.Names.Len() > 0 {
                 sbImports.Add(fmt.Sprintf("import \"%s\";\n", v.Name))
-                for testFunc := range collector.Names.Iter() {
+                for i = 0; i < collector.Names.Len(); i++ {
+                    testFunc := collector.Names.At(i)
                     if len(testFunc) > 4 && testFunc[0:4] == "Test" {
                         sbTests.Add(fmt.Sprintf("testing.Test{\"%s.%s\", %s.%s },\n",
                             sname, testFunc, sname, testFunc))
@@ -259,8 +265,8 @@ func (d *Dag) Topsort() *vector.Vector {
 
         node, _ = zero.Pop().(*Package)
 
-        for ch := range node.children.Iter() {
-            child = ch.(*Package)
+        for i := 0; i < node.children.Len(); i++ {
+            child = node.children.At(i).(*Package)
             child.indegree--
             if child.indegree == 0 {
                 zero.Push(child)
@@ -293,6 +299,8 @@ func (d *Dag) stdlibDependency(root, dep string) bool {
 
 func (d *Dag) PrintInfo() {
 
+    var i int
+
     fmt.Println("--------------------------------------")
     fmt.Println("Packages and Dependencies")
     fmt.Println("p = package, f = file, d = dependency ")
@@ -300,8 +308,8 @@ func (d *Dag) PrintInfo() {
 
     for k, v := range d.pkgs {
         fmt.Println("p ", k)
-        for fs := range v.Files.Iter() {
-            fmt.Println("f ", fs)
+        for i = 0; i < v.Files.Len(); i++ {
+            fmt.Println("f ", v.Files.At(i))
         }
         for ds := range v.dependencies.Iter() {
             fmt.Println("d ", ds)
