@@ -19,7 +19,7 @@ func TestGetOpt(t *testing.T) {
     getopt.StringOption("-f -file --file --file=")
     getopt.StringOption("-I")
 
-    argv := strings.Split("-h -version not-option -fsomething -I/dir1 -I/dir2", " ", 0)
+    argv := strings.Split("-h -version not-option -fsomething -I/dir1 -I/dir2", " ", -1)
 
     args := getopt.Parse(argv)
 

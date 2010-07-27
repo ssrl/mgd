@@ -166,17 +166,15 @@ func (c *Compiler) ParallelCompile(pkgs *vector.Vector) {
         localDeps.Add( pkg.Name )
     }
 
-///     fmt.Println( localDeps )
-
     parallel = new(vector.Vector)
 
-    for y = 0; y < pkgs.Len(); y++ {
+    for y = 0; y < pkgs.Len(); {
 
         pkg, _ = pkgs.At(y).(*dag.Package)
 
         if ! pkg.Ready( localDeps, compiledDeps ) {
 
-            c.testCompileMultipe( parallel )
+            c.compileMultipe( parallel )
 
             for z = 0; z < parallel.Len(); z++ {
                 cpkg, _ = parallel.At(z).(*dag.Package)
@@ -187,61 +185,58 @@ func (c *Compiler) ParallelCompile(pkgs *vector.Vector) {
 
         }else{
             parallel.Push( pkg )
+            y++
         }
     }
-}
 
-func (c *Compiler) testCompileMultipe(pkgs *vector.Vector){
-
-    fmt.Println(">>>>>>>>>>>>>>>>>>>>")
-    for y := 0; y < pkgs.Len(); y++ {
-        pkg, _ := pkgs.At(y).(*dag.Package)
-        fmt.Println( pkg.Name )
+    if parallel.Len() > 0 {
+        c.compileMultipe( parallel )
     }
 
-    fmt.Println("<<<<<<<<<<<<<<<<<<<<");
 }
 
-func (c *Compiler) ForkCompile(pkgs *vector.Vector) {
+func (c *Compiler) compileMultipe(pkgs *vector.Vector){
 
-    includeLen := c.extraPkgIncludes()
+    var ok bool
+    var max int = pkgs.Len()
+    var pkg *dag.Package
+    var trouble bool = false
 
-    for y := 0; y < pkgs.Len(); y++ {
-        pkg, _ := pkgs.At(y).(*dag.Package) //safe cast, only Packages there
+    if max == 0 {
+        die("[ERROR] trying to compile 0 packages in parallel\n")
+    }
 
-        argv := make([]string, 5+pkg.Files.Len()+(includeLen*2))
-        i := 0
-        argv[i] = c.executable
-        i++
-        argv[i] = "-I"
-        i++
-        argv[i] = c.root
-        i++
-        if includeLen > 0 {
-            for y := 0; y < includeLen; y++ {
-                argv[i] = "-I"
-                i++
-                argv[i] = c.includes[y]
-                i++
+    if max == 1 {
+        pkg, _ = pkgs.At(0).(*dag.Package)
+        fmt.Println("compiling:", pkg.Name)
+        handy.StdExecve(pkg.Argv, true)
+    }else{
+
+        ch := make(chan bool, pkgs.Len())
+
+        for y := 0; y < max; y++ {
+            pkg, _ := pkgs.At(y).(*dag.Package)
+            fmt.Println("compiling|", pkg.Name)
+            go gCompile( pkg.Argv, ch )
+        }
+
+        // drain channel (make sure all jobs are finished)
+        for z := 0; z < max; z++ {
+            ok = <-ch
+            if !ok {
+                trouble = true
             }
         }
-        argv[i] = "-o"
-        i++
-        argv[i] = path.Join(c.root, pkg.Name) + c.suffix
-        i++
-
-        for z := 0; z < pkg.Files.Len(); z++ {
-            argv[i] = pkg.Files.At(z)
-            i++
-        }
-
-        if c.dryrun {
-            dryRun(argv)
-        } else {
-            fmt.Println("compiling:", pkg.Name)
-            handy.StdExecve(argv, true)
-        }
     }
+
+    if trouble {
+        die("[ERROR] failed batch compile job\n")
+    }
+}
+
+func gCompile(argv []string, c chan bool){
+    ok := handy.StdExecve(argv, false) // don't exit on error
+    c<-ok
 }
 
 // for removal of temoprary packages created for testing and so on..
