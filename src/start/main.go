@@ -17,6 +17,7 @@ import (
     "utilz/handy"
     "io/ioutil"
     "regexp"
+    "runtime"
 )
 
 
@@ -87,7 +88,7 @@ func gotRoot() {
 }
 
 func findTestFilesAlso() {
-    // override IncludeFile to make walker pick up only .go files
+    // override IncludeFile to make walker pick _test.go files also
     walker.IncludeFile = func(s string) bool {
         return strings.HasSuffix(s, ".go")
     }
@@ -188,7 +189,13 @@ func main() {
 
     // compile
     kompiler := compiler.New(srcdir, arch, dryrun, includes)
-    kompiler.ForkCompile(sorted)
+///     kompiler.ForkCompile(sorted)
+    kompiler.CreateArgv(sorted)
+    if runtime.GOMAXPROCS( -1 ) > 1 {
+        kompiler.ParallelCompile(sorted)
+    }else{
+        kompiler.SerialCompile(sorted)
+    }
 
     // test
     if test {

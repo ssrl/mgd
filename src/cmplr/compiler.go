@@ -8,6 +8,7 @@ import (
     "os"
     "container/vector"
     "fmt"
+    "utilz/stringset"
     "utilz/handy"
     "cmplr/dag"
     "path"
@@ -96,6 +97,110 @@ func (c *Compiler) String() string {
     return fmt.Sprintf(s, c.root, c.arch, c.suffix, c.executable)
 }
 
+func (c *Compiler) CreateArgv(pkgs *vector.Vector) {
+
+    var argv []string
+
+    includeLen := c.extraPkgIncludes()
+
+    for y := 0; y < pkgs.Len(); y++ {
+        pkg, _ := pkgs.At(y).(*dag.Package) //safe cast, only Packages there
+
+        argv = make([]string, 5+pkg.Files.Len()+(includeLen*2))
+        i := 0
+        argv[i] = c.executable
+        i++
+        argv[i] = "-I"
+        i++
+        argv[i] = c.root
+        i++
+        if includeLen > 0 {
+            for y := 0; y < includeLen; y++ {
+                argv[i] = "-I"
+                i++
+                argv[i] = c.includes[y]
+                i++
+            }
+        }
+        argv[i] = "-o"
+        i++
+        argv[i] = path.Join(c.root, pkg.Name) + c.suffix
+        i++
+
+        for z := 0; z < pkg.Files.Len(); z++ {
+            argv[i] = pkg.Files.At(z)
+            i++
+        }
+
+        pkg.Argv = argv
+    }
+}
+
+func (c *Compiler) SerialCompile(pkgs *vector.Vector) {
+
+    for y := 0; y < pkgs.Len(); y++ {
+        pkg, _ := pkgs.At(y).(*dag.Package) //safe cast, only Packages there
+
+        if c.dryrun {
+            dryRun(pkg.Argv)
+        } else {
+            fmt.Println("compiling:", pkg.Name)
+            handy.StdExecve(pkg.Argv, true)
+        }
+    }
+}
+
+func (c *Compiler) ParallelCompile(pkgs *vector.Vector) {
+
+    var localDeps *stringset.StringSet
+    var compiledDeps *stringset.StringSet
+    var pkg, cpkg *dag.Package
+    var y, z int
+    var parallel *vector.Vector
+
+    localDeps    = stringset.New()
+    compiledDeps = stringset.New()
+
+    for y = 0; y < pkgs.Len(); y++ {
+        pkg, _ = pkgs.At(y).(*dag.Package)
+        localDeps.Add( pkg.Name )
+    }
+
+///     fmt.Println( localDeps )
+
+    parallel = new(vector.Vector)
+
+    for y = 0; y < pkgs.Len(); y++ {
+
+        pkg, _ = pkgs.At(y).(*dag.Package)
+
+        if ! pkg.Ready( localDeps, compiledDeps ) {
+
+            c.testCompileMultipe( parallel )
+
+            for z = 0; z < parallel.Len(); z++ {
+                cpkg, _ = parallel.At(z).(*dag.Package)
+                compiledDeps.Add( cpkg.Name )
+            }
+
+            parallel = new(vector.Vector)
+
+        }else{
+            parallel.Push( pkg )
+        }
+    }
+}
+
+func (c *Compiler) testCompileMultipe(pkgs *vector.Vector){
+
+    fmt.Println(">>>>>>>>>>>>>>>>>>>>")
+    for y := 0; y < pkgs.Len(); y++ {
+        pkg, _ := pkgs.At(y).(*dag.Package)
+        fmt.Println( pkg.Name )
+    }
+
+    fmt.Println("<<<<<<<<<<<<<<<<<<<<");
+}
 
 func (c *Compiler) ForkCompile(pkgs *vector.Vector) {
 

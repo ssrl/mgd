@@ -23,7 +23,8 @@ type Dag struct {
 
 type Package struct {
     indegree        int
-    Name, ShortName string
+    Name, ShortName string // absolute path, basename
+    Argv            []string // command needed to compile package
     Files           *vector.StringVector // relative path of files
     dependencies    *stringset.StringSet
     children        *vector.Vector // packages that depend on this
@@ -318,6 +319,16 @@ func (d *Dag) PrintInfo() {
     }
 }
 
+func (p *Package) Ready(local, compiled *stringset.StringSet) bool {
+
+    for dep := range p.dependencies.Iter() {
+        if local.Contains( dep ) && ! compiled.Contains( dep ) {
+            return false
+        }
+    }
+
+    return true
+}
 
 func (p *Package) Visit(node interface{}) (v ast.Visitor) {
 
