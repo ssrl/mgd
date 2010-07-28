@@ -208,7 +208,7 @@ func (c *Compiler) compileMultipe(pkgs *vector.Vector){
 
     if max == 1 {
         pkg, _ = pkgs.At(0).(*dag.Package)
-        fmt.Println("compiling||", pkg.Name)
+        fmt.Println("compiling:", pkg.Name)
         handy.StdExecve(pkg.Argv, true)
     }else{
 
@@ -216,7 +216,7 @@ func (c *Compiler) compileMultipe(pkgs *vector.Vector){
 
         for y := 0; y < max; y++ {
             pkg, _ := pkgs.At(y).(*dag.Package)
-            fmt.Println("compiling||", pkg.Name)
+            fmt.Println("compiling:", pkg.Name)
             go gCompile( pkg.Argv, ch )
         }
 
@@ -232,6 +232,7 @@ func (c *Compiler) compileMultipe(pkgs *vector.Vector){
     if trouble {
         die("[ERROR] failed batch compile job\n")
     }
+
 }
 
 func gCompile(argv []string, c chan bool){

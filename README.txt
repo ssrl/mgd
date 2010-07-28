@@ -9,16 +9,16 @@ compile order. [865]g and [865]l is used to compile and
 link program. Testing and formatting is also automated.
 
 
-Build:
-------------------------------------------------------------
-
-This should be as easy as running the script ./build.sh
-
-
 Install:
 ------------------------------------------------------------
 
-Copy the file: gd  somewhere it can be found ($PATH)
+Run the script ./build.sh without arguments
+
+NOTE: It will try to copy the file 'gd' to $HOME/bin
+      and if that directory is not present, an error
+      message will be displayed, it's not the most
+      advanced install script.. :-)
+
 
 
 Try it Out:
@@ -34,6 +34,7 @@ $ ./gd -s src       # will print legal compile order
 $ ./gd -o name src  # will produce executable 'name' of
                     # source-code inside src directory
 $ ./gd src -test    # will run unit-tests
+$ ./gd src -fmt     # will format (gofmt) the source-code
 
 
 
@@ -52,8 +53,8 @@ a directory-tree package-structure.
 Logo
 ------------------------------------------------------------
 
-The logo was made with LaTeX and tikz, so I'll include it
-here, if anyone is interested in creating their own :-)
+The logo was made with LaTeX and tikz, it's basically just
+an upside down g with some filled with yellow color..
 
 =start LaTeX
 
@@ -73,7 +74,6 @@ here, if anyone is interested in creating their own :-)
 
 
 =end LaTeX
-
 
 
 
