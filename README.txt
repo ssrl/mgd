@@ -12,7 +12,7 @@ link program. Testing and formatting is also automated.
 Install:
 ------------------------------------------------------------
 
-Run the script ./build.sh without arguments
+Run the script ./build.sh
 
 NOTE: It will try to copy the file 'gd' to $HOME/bin
       and if that directory is not present, an error
@@ -31,8 +31,6 @@ executable: gd
 $ ./gd src          # will compile source inside src
 $ ./gd -p src       # will print dependency info gathered
 $ ./gd -s src       # will print legal compile order
-$ ./gd -o name src  # will produce executable 'name' of
-                    # source-code inside src directory
 $ ./gd src -test    # will run unit-tests
 $ ./gd src -fmt     # will format (gofmt) the source-code
 
@@ -54,7 +52,7 @@ Logo
 ------------------------------------------------------------
 
 The logo was made with LaTeX and tikz, it's basically just
-an upside down g with some filled with yellow color..
+an upside down g filled with yellow..
 
 =start LaTeX
 
