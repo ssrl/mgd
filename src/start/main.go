@@ -189,7 +189,6 @@ func main() {
 
     // compile
     kompiler := compiler.New(srcdir, arch, dryrun, includes)
-///     kompiler.ForkCCompile(sorted)
     kompiler.CreateArgv(sorted)
     if runtime.GOMAXPROCS( -1 ) > 1 {
         kompiler.ParallelCompile(sorted)
@@ -200,7 +199,6 @@ func main() {
     // test
     if test {
         testMain, testDir := dgrph.MakeMainTest(srcdir)
-///         kompiler.ForkCCompile(testMain)
         kompiler.CreateArgv(testMain)
         kompiler.SerialCompile(testMain)
         kompiler.ForkLink(testMain, gdtest, false)
