@@ -17,9 +17,7 @@ import (
 )
 
 
-type Dag struct {
-    pkgs map[string]*Package // package-name -> Package object
-}
+type Dag map[string]*Package // package-name -> Package object
 
 type Package struct {
     indegree        int
@@ -34,10 +32,8 @@ type TestCollector struct {
     Names *vector.StringVector
 }
 
-func New() *Dag {
-    d := new(Dag)
-    d.pkgs = make(map[string]*Package)
-    return d
+func New() Dag {
+    return make(map[string]*Package)
 }
 
 func newPackage() *Package {
@@ -55,7 +51,8 @@ func newTestCollector() *TestCollector {
     return t
 }
 
-func (d *Dag) Parse(root string, sv *vector.StringVector) {
+
+func (d Dag) Parse(root string, sv *vector.StringVector) {
 
     root = addSeparatorPath(root)
 
@@ -69,21 +66,21 @@ func (d *Dag) Parse(root string, sv *vector.StringVector) {
         unroot := dir[len(root):len(dir)]
         pkgname := path.Join(unroot, tree.Name.Obj.Name)
 
-        _, ok := d.pkgs[pkgname]
+        _, ok := d[pkgname]
         if !ok {
-            d.pkgs[pkgname] = newPackage()
-            d.pkgs[pkgname].Name = pkgname
-            d.pkgs[pkgname].ShortName = tree.Name.Obj.Name
+            d[pkgname] = newPackage()
+            d[pkgname].Name = pkgname
+            d[pkgname].ShortName = tree.Name.Obj.Name
         }
 
-        ast.Walk(d.pkgs[pkgname], tree)
-        d.pkgs[pkgname].Files.Push(e)
+        ast.Walk(d[pkgname], tree)
+        d[pkgname].Files.Push(e)
     }
 }
 
-func (d *Dag) addEdge(from, to string) {
-    fromNode := d.pkgs[from]
-    toNode := d.pkgs[to]
+func (d Dag) addEdge(from, to string) {
+    fromNode := d[from]
+    toNode := d[to]
     fromNode.children.Push(toNode)
     toNode.indegree++
 }
@@ -91,11 +88,12 @@ func (d *Dag) addEdge(from, to string) {
 // are valid if they are not part of the actual source-tree,
 // i.e., stdlib dependencies and included (-I) dependencies
 // are not investigated for validity..
-func (d *Dag) GraphBuilder(includes []string) {
+
+func (d Dag) GraphBuilder(includes []string) {
 
     goRoot := path.Join(os.Getenv("GOROOT"), "src/pkg")
 
-    for k, v := range d.pkgs {
+    for k, v := range d {
 
         for dep := range v.dependencies.Iter() {
 
@@ -113,7 +111,7 @@ func (d *Dag) GraphBuilder(includes []string) {
     }
 }
 
-func (d *Dag) MakeDotGraph(filename string){
+func (d Dag) MakeDotGraph(filename string){
 
     var rw_r__r__ int = 420
     var file *os.File
@@ -143,7 +141,7 @@ func (d *Dag) MakeDotGraph(filename string){
 
     sb.Add("digraph depgraph {\n\trankdir=LR;\n")
 
-    for _, v := range d.pkgs {
+    for _, v := range d {
         v.DotGraph(sb)
     }
 
@@ -155,7 +153,7 @@ func (d *Dag) MakeDotGraph(filename string){
 
 }
 
-func (d *Dag) MakeMainTest(root string) (*vector.Vector, string) {
+func (d Dag) MakeMainTest(root string) (*vector.Vector, string) {
 
     var max, rwxr_xr_x, i int
     var isTest bool
@@ -174,7 +172,7 @@ func (d *Dag) MakeMainTest(root string) (*vector.Vector, string) {
     sbTests.Add("\n\nvar tests = []testing.Test{\n")
     sbBench.Add("\n\nvar benchmarks = []testing.Benchmark{\n")
 
-    for _, v := range d.pkgs {
+    for _, v := range d {
 
         isTest = false
         sname = v.ShortName
@@ -291,7 +289,7 @@ func (d *Dag) MakeMainTest(root string) (*vector.Vector, string) {
     return vec, tmpdir
 }
 
-func (d *Dag) Topsort() *vector.Vector {
+func (d Dag) Topsort() *vector.Vector {
 
     var node, child *Package
     var cnt int = 0
@@ -299,7 +297,7 @@ func (d *Dag) Topsort() *vector.Vector {
     zero := new(vector.Vector)
     done := new(vector.Vector)
 
-    for _, v := range d.pkgs {
+    for _, v := range d {
         if v.indegree == 0 {
             zero.Push(v)
         }
@@ -320,7 +318,7 @@ func (d *Dag) Topsort() *vector.Vector {
         done.Push(node)
     }
 
-    if cnt < len(d.pkgs) {
+    if cnt < len(d) {
         fmt.Fprintf(os.Stderr, "[ERROR] loop in dependency graph\n")
         os.Exit(1)
     }
@@ -328,12 +326,12 @@ func (d *Dag) Topsort() *vector.Vector {
     return done
 }
 
-func (d *Dag) localDependency(dep string) bool {
-    _, ok := d.pkgs[dep]
+func (d Dag) localDependency(dep string) bool {
+    _, ok := d[dep]
     return ok
 }
 
-func (d *Dag) stdlibDependency(root, dep string) bool {
+func (d Dag) stdlibDependency(root, dep string) bool {
     dir, staterr := os.Stat(path.Join(root, dep))
     if staterr != nil {
         return false
@@ -341,7 +339,7 @@ func (d *Dag) stdlibDependency(root, dep string) bool {
     return dir.IsDirectory()
 }
 
-func (d *Dag) PrintInfo() {
+func (d Dag) PrintInfo() {
 
     var i int
 
@@ -350,7 +348,7 @@ func (d *Dag) PrintInfo() {
     fmt.Println("p = package, f = file, d = dependency ")
     fmt.Println("--------------------------------------\n")
 
-    for k, v := range d.pkgs {
+    for k, v := range d {
         fmt.Println("p ", k)
         for i = 0; i < v.Files.Len(); i++ {
             fmt.Println("f ", v.Files.At(i))
