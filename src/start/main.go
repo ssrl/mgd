@@ -28,7 +28,7 @@ var getopt *gopt.GetOpt
 var files *vector.StringVector
 
 // variables for the different options
-var arch, gdtest, output, srcdir, bmatch, match, rewRule, tabWidth string
+var dot, arch, gdtest, output, srcdir, bmatch, match, rewRule, tabWidth string
 var dryrun, test, testVerbose, static, noComments, tabIndent, listing bool
 var gofmt, printInfo, sortInfo, cleanTree, needsHelp, needsVersion bool
 var includes []string = nil
@@ -58,6 +58,7 @@ func init() {
     getopt.BoolOption("-no-comments --no-comments")
     getopt.BoolOption("-tab --tab")
     getopt.StringOption("-a -arch --arch -arch= --arch=")
+    getopt.StringOption("-dot -dot= --dot --dot=")
     getopt.StringOption("-I")
     getopt.StringOption("-tabwidth --tabwidth -tabwidth= --tabwidth=")
     getopt.StringOption("-rew-rule --rew-rule -rew-rule= --rew-rule=")
@@ -170,6 +171,11 @@ func main() {
         os.Exit(0)
     }
 
+    // draw graphviz dot graph
+    if dot != "" {
+        dgrph.MakeDotGraph(dot)
+        os.Exit(0)
+    }
 
     gotRoot();//?
 
@@ -319,6 +325,11 @@ func parseArgv(argv []string) (args []string) {
     if getopt.IsSet("-arch") {
         arch = getopt.Get("-a")
     }
+
+    if getopt.IsSet("-dot") {
+        dot = getopt.Get("-dot")
+    }
+
 
     if getopt.IsSet("-I") {
         if includes == nil {
@@ -560,6 +571,7 @@ func printHelp() {
   -a --arch            architecture (amd64,arm,386)
   -d --dryrun          print what gd would do (stdout)
   -c --clean           rm *.[a865] from src-directory
+  -dot                 create a graphviz dot file
   -I                   import package directories
   -t --test            run all unit-tests
   -b --benchmarks      pass argument to unit-test

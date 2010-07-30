@@ -113,11 +113,54 @@ func (d *Dag) GraphBuilder(includes []string) {
     }
 }
 
+func (d *Dag) MakeDotGraph(filename string){
+
+    var rw_r__r__ int = 420
+    var file *os.File
+    var fileinfo *os.FileInfo
+    var e os.Error
+    var sb *stringbuffer.StringBuffer
+
+    fileinfo, e = os.Stat(filename)
+
+    if e == nil {
+        if fileinfo.IsRegular() {
+            e = os.Remove( fileinfo.Name )
+            if e != nil {
+                fmt.Fprintf(os.Stderr,"[ERROR] failed to remove: %s\n", filename)
+                os.Exit(1)
+            }
+        }
+    }
+
+    sb = stringbuffer.NewSize(500)
+    file, e = os.Open(filename, os.O_WRONLY|os.O_CREAT, rw_r__r__)
+
+    if e != nil {
+        fmt.Fprintf(os.Stderr, "[ERROR] %s\n", e)
+        os.Exit(1)
+    }
+
+    sb.Add("digraph depgraph {\n\trankdir=LR;\n")
+
+    for _, v := range d.pkgs {
+        v.DotGraph(sb)
+    }
+
+    sb.Add("}\n")
+
+    file.WriteString( sb.String() )
+
+    file.Close()
+
+}
+
 func (d *Dag) MakeMainTest(root string) (*vector.Vector, string) {
 
     var max, rwxr_xr_x, i int
     var isTest bool
     var sname, tmpdir, tmpstub, tmpfile string
+
     rwxr_xr_x = 493
 
     sbImports := stringbuffer.NewSize(300)
@@ -316,6 +359,20 @@ func (d *Dag) PrintInfo() {
             fmt.Println("d ", ds)
         }
         fmt.Println("")
+    }
+}
+
+func (p *Package) DotGraph(sb *stringbuffer.StringBuffer){
+
+    if p.dependencies.Len() == 0 {
+
+        sb.Add(fmt.Sprintf("\t\"%s\";\n", p.Name ))
+
+    }else{
+
+        for dep := range p.dependencies.Iter() {
+            sb.Add(fmt.Sprintf("\t\"%s\" -> \"%s\";\n", p.Name, dep))
+        }
     }
 }
 

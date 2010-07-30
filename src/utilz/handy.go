@@ -13,7 +13,6 @@ import (
 
 // some utility functions
 
-
 func StdExecve(argv []string, stopOnTrouble bool) (ok bool) {
 
     var fdesc []*os.File
@@ -47,6 +46,7 @@ func StdExecve(argv []string, stopOnTrouble bool) (ok bool) {
 
     return ok
 }
+
 
 
 func Which(cmd string) string {
