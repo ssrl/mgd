@@ -103,10 +103,11 @@ build.sh - utility script for godag
 
 targets:
 
+  help    : print this menu and exit
   clean   : rm *.[865a] from src + rm gd \$HOME/bin/gd
   build   : compile source code in ./src
   install : build + mv gd \$HOME/bin  (default)
-  cproot  : copy+rename pure go part of \$GOROOT/src/pkg
+  cproot  : copy modified (pure go) part of \$GOROOT/src/pkg
 
 EOH
 }
