@@ -27,21 +27,43 @@ var getopt *gopt.GetOpt
 // list of files to compile
 var files *vector.StringVector
 
-// variables for the different options
-var dot, arch, gdtest, output, srcdir, bmatch, match, rewRule, tabWidth string
-var dryrun, test, testVerbose, static, noComments, tabIndent, listing bool
-var gofmt, printInfo, sortInfo, cleanTree, needsHelp, needsVersion bool
+// libraries other than $GOROOT/pkg/PLATFORM
 var includes []string = nil
 
+// variables for the string options
+var(
+    dot      = ""
+    arch     = ""
+    gdtest   = "gdtest"
+    output   = ""
+    srcdir   = "src"
+    bmatch   = ""
+    match    = ""
+    rewRule  = ""
+    tabWidth = ""
+)
+
+// variables for bool options
+var(
+    dryrun       = false
+    test         = false
+    testVerbose  = false
+    static       = false
+    noComments   = false
+    tabIndent    = false
+    listing      = false
+    gofmt        = false
+    printInfo    = false
+    sortInfo     = false
+    cleanTree    = false
+    needsHelp    = false
+    needsVersion = false
+)
 
 func init() {
 
     // initialize option parser
     getopt = gopt.New()
-
-    // some string defaults
-    gdtest = "gdtest"
-    srcdir = "src"
 
     // add all options (bool/string)
     getopt.BoolOption("-h -help --help help")
@@ -98,6 +120,7 @@ func findTestFilesAlso() {
 func main() {
 
     var ok bool
+    var e os.Error
     var argv, args []string
 
     // default config location 1 $HOME/.gdrc
@@ -128,8 +151,18 @@ func main() {
             fmt.Fprintf(os.Stderr, "[WARNING] len(input directories) > 1\n")
         }
         srcdir = args[0]
+        if srcdir == "." {
+            srcdir, e = os.Getwd()
+            if e != nil {
+                pwd := os.Getenv("PWD")
+                if pwd == "" {
+                    fmt.Fprintf(os.Stderr,
+                                "[ERROR] can't find working directory\n")
+                    os.Exit(1)
+                }
+            }
+        }
     }
-
 
     // stuff that can be done without $GOROOT
     if listing {
@@ -179,7 +212,6 @@ func main() {
 
     gotRoot();//?
 
-
     // sort graph based on dependencies
     dgrph.GraphBuilder(includes)
     sorted := dgrph.Topsort()
@@ -220,8 +252,8 @@ func main() {
                 tstring += "\n"
             }
             fmt.Printf(tstring)
-            ok := handy.StdExecve(testArgv, false)
-            e := os.Remove(gdtest)
+            ok = handy.StdExecve(testArgv, false)
+            e = os.Remove(gdtest)
             if e != nil {
                 fmt.Fprintf(os.Stderr, "[ERROR] %s\n", e)
             }
