@@ -374,6 +374,45 @@ func (p *Package) DotGraph(sb *stringbuffer.StringBuffer){
     }
 }
 
+
+func (p *Package) UpToDate() bool {
+
+    if p.Argv == nil {
+        panic("Missing dag.Package.Argv")
+    }
+
+    var e os.Error
+    var finfo *os.FileInfo
+    var compiledModifiedTime int64
+    var last, stop, i int
+    var resultingFile string
+
+    last          = len(p.Argv) - 1
+    resultingFile = p.Argv[ last - p.Files.Len() ]
+    stop          = last - p.Files.Len()
+
+    finfo, e = os.Stat( resultingFile )
+
+    if e != nil {
+        return false
+    }else{
+        compiledModifiedTime = finfo.Mtime_ns
+    }
+
+    for i = last; i > stop; i-- {
+        finfo, e = os.Stat( p.Argv[i] )
+        if e != nil {
+            panic(fmt.Sprintf("Missing go file: %s\n", p.Argv[i]) )
+        }else{
+            if finfo.Mtime_ns > compiledModifiedTime {
+                return false
+            }
+        }
+    }
+
+    return true;
+}
+
 func (p *Package) Ready(local, compiled *stringset.StringSet) bool {
 
     for dep := range p.dependencies.Iter() {

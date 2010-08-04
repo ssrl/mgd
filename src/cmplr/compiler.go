@@ -144,8 +144,12 @@ func (c *Compiler) SerialCompile(pkgs *vector.Vector) {
         if c.dryrun {
             dryRun(pkg.Argv)
         } else {
-            fmt.Println("compiling:", pkg.Name)
-            handy.StdExecve(pkg.Argv, true)
+            if !pkg.UpToDate(){
+                fmt.Println("compiling:", pkg.Name)
+                handy.StdExecve(pkg.Argv, true)
+            }else{
+                fmt.Println("up 2 date:", pkg.Name)
+            }
         }
     }
 }
@@ -208,16 +212,25 @@ func (c *Compiler) compileMultipe(pkgs *vector.Vector){
 
     if max == 1 {
         pkg, _ = pkgs.At(0).(*dag.Package)
-        fmt.Println("compiling:", pkg.Name)
-        handy.StdExecve(pkg.Argv, true)
+        if ! pkg.UpToDate() {
+            fmt.Println("compiling:", pkg.Name)
+            handy.StdExecve(pkg.Argv, true)
+        }else{
+            fmt.Println("up 2 date:", pkg.Name)
+        }
     }else{
 
         ch := make(chan bool, pkgs.Len())
 
         for y := 0; y < max; y++ {
             pkg, _ := pkgs.At(y).(*dag.Package)
-            fmt.Println("compiling:", pkg.Name)
-            go gCompile( pkg.Argv, ch )
+            if ! pkg.UpToDate() {
+                fmt.Println("compiling:", pkg.Name)
+                go gCompile( pkg.Argv, ch )
+            }else{
+                fmt.Println("up 2 date:", pkg.Name)
+                ch<-true
+            }
         }
 
         // drain channel (make sure all jobs are finished)

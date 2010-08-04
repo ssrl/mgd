@@ -196,7 +196,7 @@ func main() {
     // compile
     kompiler := compiler.New(srcdir, arch, dryrun, includes)
     kompiler.CreateArgv(sorted)
-    if runtime.GOMAXPROCS( -1 ) > 1 {
+    if runtime.GOMAXPROCS( -1 ) > 1 && !dryrun {
         kompiler.ParallelCompile(sorted)
     }else{
         kompiler.SerialCompile(sorted)
