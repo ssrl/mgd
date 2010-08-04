@@ -154,8 +154,8 @@ func main() {
         if srcdir == "." {
             srcdir, e = os.Getwd()
             if e != nil {
-                pwd := os.Getenv("PWD")
-                if pwd == "" {
+                srcdir = os.Getenv("PWD")
+                if srcdir == "" {
                     fmt.Fprintf(os.Stderr,
                                 "[ERROR] can't find working directory\n")
                     os.Exit(1)
