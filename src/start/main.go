@@ -606,6 +606,7 @@ func printListing(){
   -d --dryrun          =>   %t
   -c --clean           =>   %t
   -I                   =>   %v
+  -dot                 =>   '%s'
   -t --test            =>   %t
   -b --benchmarks      =>   '%s'
   -m --match           =>   '%s'
@@ -630,7 +631,7 @@ func printListing(){
 
     fmt.Printf(listMSG, needsHelp, needsVersion, printInfo,
               sortInfo, output, static, archRepr, dryrun, cleanTree,
-              includes, test, bmatch, match, testVerbose, gdtest,
+              includes, dot, test, bmatch, match, testVerbose, gdtest,
               gofmt, rewRule, tabIndent, tabRepr, noComments);
 }
 
