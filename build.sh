@@ -167,7 +167,7 @@ function up_one_level {
 function cproot {
 
     mkdir "$CPROOT";
-    echo "cp *.go: $SRCROOT  ->  $CPROOT"
+    echo "cp *.go: \$GOROOT/src/pkg  ->  $CPROOT"
     echo "this may take some time..."
 
     for p in "${package[@]}";
