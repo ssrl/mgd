@@ -113,7 +113,7 @@ func (d Dag) GraphBuilder(includes []string) {
 
 func (d Dag) MakeDotGraph(filename string){
 
-    var rw_r__r__ int = 420
+    var rw_r__r__ uint32 = 420
     var file *os.File
     var fileinfo *os.FileInfo
     var e os.Error
@@ -155,11 +155,11 @@ func (d Dag) MakeDotGraph(filename string){
 
 func (d Dag) MakeMainTest(root string) (*vector.Vector, string) {
 
-    var max, rwxr_xr_x, i int
+    var max, i int
+    var rwxr_xr_x uint32 = 493
     var isTest bool
     var sname, tmpdir, tmpstub, tmpfile string
 
-    rwxr_xr_x = 493
 
     sbImports := stringbuffer.NewSize(300)
     sbTests := stringbuffer.NewSize(1000)
