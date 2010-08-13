@@ -64,13 +64,14 @@ func (d Dag) Parse(root string, sv *vector.StringVector) {
         tree := getSyntaxTreeOrDie(e, parser.ImportsOnly)
         dir, _ := path.Split(e)
         unroot := dir[len(root):len(dir)]
-        pkgname := path.Join(unroot, tree.Name.Obj.Name)
+        shortname := tree.Name.String()
+        pkgname := path.Join(unroot, shortname)
 
         _, ok := d[pkgname]
         if !ok {
             d[pkgname] = newPackage()
             d[pkgname].Name = pkgname
-            d[pkgname].ShortName = tree.Name.Obj.Name
+            d[pkgname].ShortName = shortname
         }
 
         ast.Walk(d[pkgname], tree)
@@ -463,7 +464,7 @@ func addSeparatorPath(root string) string {
 }
 
 func getSyntaxTreeOrDie(file string, mode uint) *ast.File {
-    absSynTree, err := parser.ParseFile(file, nil, nil, mode)
+    absSynTree, err := parser.ParseFile(file, nil, mode)
     if err != nil {
         fmt.Fprintf(os.Stderr, "%s\n", err)
         os.Exit(1)
