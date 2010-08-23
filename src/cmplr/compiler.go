@@ -138,15 +138,18 @@ func (c *Compiler) CreateArgv(pkgs *vector.Vector) {
 
 func (c *Compiler) SerialCompile(pkgs *vector.Vector) {
 
+    var oldPkgFound bool = false
+
     for y := 0; y < pkgs.Len(); y++ {
         pkg, _ := pkgs.At(y).(*dag.Package) //safe cast, only Packages there
 
         if c.dryrun {
             dryRun(pkg.Argv)
         } else {
-            if !pkg.UpToDate(){
+            if oldPkgFound || !pkg.UpToDate(){
                 fmt.Println("compiling:", pkg.Name)
                 handy.StdExecve(pkg.Argv, true)
+                oldPkgFound = true
             }else{
                 fmt.Println("up 2 date:", pkg.Name)
             }
@@ -161,6 +164,7 @@ func (c *Compiler) ParallelCompile(pkgs *vector.Vector) {
     var pkg, cpkg *dag.Package
     var y, z int
     var parallel *vector.Vector
+    var oldPkgFound bool = false
 
     localDeps    = stringset.New()
     compiledDeps = stringset.New()
@@ -178,7 +182,7 @@ func (c *Compiler) ParallelCompile(pkgs *vector.Vector) {
 
         if ! pkg.Ready( localDeps, compiledDeps ) {
 
-            c.compileMultipe( parallel )
+            oldPkgFound = c.compileMultipe( parallel, oldPkgFound )
 
             for z = 0; z < parallel.Len(); z++ {
                 cpkg, _ = parallel.At(z).(*dag.Package)
@@ -194,12 +198,12 @@ func (c *Compiler) ParallelCompile(pkgs *vector.Vector) {
     }
 
     if parallel.Len() > 0 {
-        c.compileMultipe( parallel )
+        oldPkgFound = c.compileMultipe( parallel, oldPkgFound )
     }
 
 }
 
-func (c *Compiler) compileMultipe(pkgs *vector.Vector){
+func (c *Compiler) compileMultipe(pkgs *vector.Vector, oldPkgFound bool) bool{
 
     var ok bool
     var max int = pkgs.Len()
@@ -212,9 +216,10 @@ func (c *Compiler) compileMultipe(pkgs *vector.Vector){
 
     if max == 1 {
         pkg, _ = pkgs.At(0).(*dag.Package)
-        if ! pkg.UpToDate() {
+        if oldPkgFound || !pkg.UpToDate() {
             fmt.Println("compiling:", pkg.Name)
             handy.StdExecve(pkg.Argv, true)
+            oldPkgFound = true
         }else{
             fmt.Println("up 2 date:", pkg.Name)
         }
@@ -224,8 +229,9 @@ func (c *Compiler) compileMultipe(pkgs *vector.Vector){
 
         for y := 0; y < max; y++ {
             pkg, _ := pkgs.At(y).(*dag.Package)
-            if ! pkg.UpToDate() {
+            if oldPkgFound || ! pkg.UpToDate() {
                 fmt.Println("compiling:", pkg.Name)
+                oldPkgFound = true
                 go gCompile( pkg.Argv, ch )
             }else{
                 fmt.Println("up 2 date:", pkg.Name)
@@ -246,6 +252,7 @@ func (c *Compiler) compileMultipe(pkgs *vector.Vector){
         die("[ERROR] failed batch compile job\n")
     }
 
+    return oldPkgFound
 }
 
 func gCompile(argv []string, c chan bool){
