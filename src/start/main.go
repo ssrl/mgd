@@ -8,6 +8,7 @@ import (
     "os"
     "fmt"
     "path"
+    "log"
     "utilz/walker"
     "cmplr/compiler"
     "cmplr/dag"
@@ -105,8 +106,7 @@ func init() {
 
 func gotRoot() {
     if os.Getenv("GOROOT") == "" {
-        fmt.Fprintf(os.Stderr, "[ERROR] missing GOROOT\n")
-        os.Exit(1)
+        log.Exit("[ERROR] missing GOROOT\n")
     }
 }
 
@@ -156,9 +156,7 @@ func main() {
             if e != nil {
                 srcdir = os.Getenv("PWD")
                 if srcdir == "" {
-                    fmt.Fprintf(os.Stderr,
-                                "[ERROR] can't find working directory\n")
-                    os.Exit(1)
+                    log.Exit("[ERROR] can't find working directory\n")
                 }
             }
         }
@@ -438,8 +436,7 @@ func createTestArgv(prg, bmatch, match string, tverb bool) []string {
     var numArgs int = 1
     pwd, e := os.Getwd()
     if e != nil {
-        fmt.Fprintf(os.Stderr, "[ERROR] could not locate working directory\n")
-        os.Exit(1)
+        log.Exit("[ERROR] could not locate working directory\n")
     }
     arg0 := path.Join(pwd, prg)
     if bmatch != "" {
@@ -486,11 +483,9 @@ func okDirOrDie(pathname string) {
     dir, staterr = os.Stat(pathname)
 
     if staterr != nil {
-        fmt.Fprintf(os.Stderr, "[ERROR] %s\n", staterr)
-        os.Exit(1)
+        log.Exitf("[ERROR] %s\n", staterr)
     } else if !dir.IsDirectory() {
-        fmt.Fprintf(os.Stderr, "[ERROR] %s: is not a directory\n", pathname)
-        os.Exit(1)
+        log.Exitf("[ERROR] %s: is not a directory\n", pathname)
     }
 }
 
@@ -522,8 +517,7 @@ func formatFiles(files *vector.StringVector, dryrun, tab, noC bool, rew, tw stri
     argv = make([]string, 6+argvLen)
 
     if fmtexec == "" {
-        fmt.Fprintf(os.Stderr, "[ERROR] could not find: gofmt\n")
-        os.Exit(1)
+        log.Exit("[ERROR] could not find: gofmt\n")
     }
 
     argv[i] = fmtexec

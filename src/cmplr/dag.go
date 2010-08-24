@@ -14,6 +14,7 @@ import (
     "os"
     "fmt"
     "time"
+    "log"
 )
 
 
@@ -103,9 +104,8 @@ func (d Dag) GraphBuilder(includes []string) {
                 /// fmt.Printf("local:  %s \n", dep);
             } else if !d.stdlibDependency(goRoot, dep) {
                 if includes == nil || len(includes) == 0 {
-                    fmt.Fprintf(os.Stderr, "[ERROR] Dependency: %s not found\n", dep)
-                    fmt.Fprintf(os.Stderr, "[ERROR] Did you use actual src-root?\n")
-                    os.Exit(1)
+                    log.Stderrf("[ERROR] Dependency: %s not found\n", dep)
+                    log.Exit("[ERROR] Did you use actual src-root?\n")
                 }
             }
         }
@@ -126,8 +126,7 @@ func (d Dag) MakeDotGraph(filename string){
         if fileinfo.IsRegular() {
             e = os.Remove( fileinfo.Name )
             if e != nil {
-                fmt.Fprintf(os.Stderr,"[ERROR] failed to remove: %s\n", filename)
-                os.Exit(1)
+                log.Exitf("[ERROR] failed to remove: %s\n", filename)
             }
         }
     }
@@ -136,8 +135,7 @@ func (d Dag) MakeDotGraph(filename string){
     file, e = os.Open(filename, os.O_WRONLY|os.O_CREAT, rw_r__r__)
 
     if e != nil {
-        fmt.Fprintf(os.Stderr, "[ERROR] %s\n", e)
-        os.Exit(1)
+        log.Exitf("[ERROR] %s\n", e)
     }
 
     sb.Add("digraph depgraph {\n\trankdir=LR;\n")
@@ -250,12 +248,11 @@ func (d Dag) MakeMainTest(root string) (*vector.Vector, string) {
     dir, e1 := os.Stat(tmpdir)
 
     if e1 == nil && dir.IsDirectory() {
-        fmt.Fprintf(os.Stderr, "[ERROR] directory: %s already exists\n", tmpdir)
+        log.Stderrf("[ERROR] directory: %s already exists\n", tmpdir)
     } else {
         e_mk := os.Mkdir(tmpdir, rwxr_xr_x)
         if e_mk != nil {
-            fmt.Fprintf(os.Stderr, "[ERROR] failed to create directory for testing\n")
-            os.Exit(1)
+            log.Exit("[ERROR] failed to create directory for testing")
         }
     }
 
@@ -264,18 +261,15 @@ func (d Dag) MakeMainTest(root string) (*vector.Vector, string) {
     fil, e2 := os.Open(tmpfile, os.O_WRONLY|os.O_CREAT, rwxr_xr_x)
 
     if e2 != nil {
-        fmt.Fprintf(os.Stderr, "[ERROR] %s\n", e2)
-        os.Exit(1)
+        log.Exitf("[ERROR] %s\n", e2)
     }
 
     n, e3 := fil.WriteString(sbTotal.String())
 
     if e3 != nil {
-        fmt.Fprintf(os.Stderr, "[ERROR] %s\n", e3)
-        os.Exit(1)
+        log.Exitf("[ERROR] %s\n", e3)
     } else if n != sbTotal.Len() {
-        fmt.Fprintf(os.Stderr, "[ERROR] failed to write test\n")
-        os.Exit(1)
+        log.Exit("[ERROR] failed to write test")
     }
 
     fil.Close()
@@ -320,8 +314,7 @@ func (d Dag) Topsort() *vector.Vector {
     }
 
     if cnt < len(d) {
-        fmt.Fprintf(os.Stderr, "[ERROR] loop in dependency graph\n")
-        os.Exit(1)
+        log.Exit("[ERROR] loop in dependency graph")
     }
 
     return done
@@ -466,8 +459,7 @@ func addSeparatorPath(root string) string {
 func getSyntaxTreeOrDie(file string, mode uint) *ast.File {
     absSynTree, err := parser.ParseFile(file, nil, mode)
     if err != nil {
-        fmt.Fprintf(os.Stderr, "%s\n", err)
-        os.Exit(1)
+        log.Exitf("%s\n", err)
     }
     return absSynTree
 }

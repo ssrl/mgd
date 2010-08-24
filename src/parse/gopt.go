@@ -54,6 +54,7 @@ import (
     "container/vector"
     "fmt"
     "os"
+    "log"
 )
 
 type GetOpt struct {
@@ -77,11 +78,6 @@ func (g *GetOpt) isOption(o string) Option {
     return nil
 }
 
-func stop(msg string, format ...interface{}) {
-    fmt.Fprintf(os.Stderr, msg, format)
-    os.Exit(1)
-}
-
 func (g *GetOpt) getStringOption(o string) *StringOption {
 
     opt := g.isOption(o)
@@ -91,10 +87,10 @@ func (g *GetOpt) getStringOption(o string) *StringOption {
         if ok {
             return sopt
         } else {
-            stop("%s: is not a string option\n", o)
+            log.Exitf("%s: is not a string option\n", o)
         }
     } else {
-        stop("%s: is not an option at all\n", o)
+        log.Exitf("%s: is not an option at all\n", o)
     }
 
     return nil
@@ -106,7 +102,7 @@ func (g *GetOpt) Get(o string) string {
 
     switch sopt.count {
     case 0:
-        stop("%s: is not set\n", o)
+        log.Exitf("%s: is not set\n", o)
     case 1: // fine do nothing
     default:
         fmt.Fprintf(os.Stderr, "[WARNING] option %s: has more arguments than 1\n", o)
@@ -125,7 +121,7 @@ func (g *GetOpt) GetMultiple(o string) []string {
     sopt := g.getStringOption(o)
 
     if sopt.count == 0 {
-        stop("%s: is not set\n", o)
+        log.Exitf("%s: is not set\n", o)
     }
 
     return sopt.values[0:sopt.count]
@@ -151,7 +147,7 @@ func (g *GetOpt) Parse(argv []string) (args []string) {
             case *StringOption:
                 sopt, _ := opt.(*StringOption)
                 if i+1 >= len(argv) {
-                    stop("missing argument for: %s\n", argv[i])
+                    log.Exitf("missing argument for: %s\n", argv[i])
                 } else {
                     sopt.addArgument(argv[i+1])
                     i++
@@ -209,7 +205,7 @@ func (g *GetOpt) IsSet(o string) bool {
         element, _ := g.cache[o]
         return element.isSet()
     } else {
-        stop("%s not an option\n", o)
+        log.Exitf("%s not an option\n", o)
     }
     return false
 }

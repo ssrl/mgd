@@ -7,8 +7,8 @@ package handy
 import (
     "os"
     "strings"
-    "fmt"
     "path"
+    "log"
 )
 
 // some utility functions
@@ -26,19 +26,21 @@ func StdExecve(argv []string, stopOnTrouble bool) (ok bool) {
     pid, err := os.ForkExec(argv[0], argv, os.Environ(), "", fdesc)
 
     if err != nil {
-        fmt.Fprintf(os.Stderr, "[ERROR] %s\n", err)
         if stopOnTrouble {
-            os.Exit(1)
+            log.Exitf("[ERROR] %s\n", err)
+        }else{
+            log.Stderrf("[ERROR] %s\n", err)
         }
         ok = false
     } else {
         wmsg, werr := os.Wait(pid, 0)
         if werr != nil || wmsg.WaitStatus != 0 {
             if werr != nil {
-                fmt.Fprintf(os.Stderr, "[ERROR] %s\n", werr)
-            }
-            if stopOnTrouble {
-                os.Exit(1)
+                if stopOnTrouble {
+                    log.Exitf("[ERROR] %s\n", werr)
+                }else{
+                    log.Stderrf("[ERROR] %s\n", werr)
+                }
             }
             ok = false
         }

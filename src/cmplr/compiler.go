@@ -12,6 +12,7 @@ import (
     "utilz/handy"
     "cmplr/dag"
     "path"
+    "log"
 )
 
 
@@ -45,7 +46,7 @@ func findCompiler(arch string) string {
 
     fullPath := handy.Which(lookingFor)
     if fullPath == "" {
-        die("[ERROR] could not find compiler\n")
+        log.Exit("[ERROR] could not find compiler\n")
     }
     return fullPath
 }
@@ -64,7 +65,7 @@ func findLinker(arch string) string {
 
     fullPath := handy.Which(lookingFor)
     if fullPath == "" {
-        die("[ERROR] could not find linker\n")
+        log.Exit("[ERROR] could not find linker")
     }
     return fullPath
 }
@@ -86,7 +87,7 @@ func archNsuffix(arch string) (a, s string) {
     case "386":
         s = ".8"
     default:
-        die("[ERROR] unknown architecture: %s\n", a)
+        log.Exitf("[ERROR] unknown architecture: %s\n", a)
     }
 
     return a, s
@@ -211,7 +212,7 @@ func (c *Compiler) compileMultipe(pkgs *vector.Vector, oldPkgFound bool) bool{
     var trouble bool = false
 
     if max == 0 {
-        die("[ERROR] trying to compile 0 packages in parallel\n")
+        log.Exit("[ERROR] trying to compile 0 packages in parallel\n")
     }
 
     if max == 1 {
@@ -249,7 +250,7 @@ func (c *Compiler) compileMultipe(pkgs *vector.Vector, oldPkgFound bool) bool{
     }
 
     if trouble {
-        die("[ERROR] failed batch compile job\n")
+        log.Exit("[ERROR] failed batch compile job\n")
     }
 
     return oldPkgFound
@@ -303,7 +304,7 @@ func (c *Compiler) ForkLink(pkgs *vector.Vector, output string, static bool) {
     }
 
     if gotMain.Len() == 0 {
-        die("[ERROR] (linking) no main package found\n")
+        log.Exit("[ERROR] (linking) no main package found\n")
     }
 
     if gotMain.Len() > 1 {
@@ -373,24 +374,19 @@ func mainChoice(pkgs *vector.Vector) int {
     n, e := fmt.Scanf("%d", &choice)
 
     if e != nil {
-        die("%s\n", e)
+        log.Exitf("%s\n", e)
     }
     if n != 1 {
-        die("failed to read input\n")
+        log.Exit("failed to read input\n")
     }
 
     if choice >= pkgs.Len() || choice < 0 {
-        die(" bad choice: %d\n", choice)
+        log.Exitf(" bad choice: %d\n", choice)
     }
 
     fmt.Printf(" chosen main-package: %s\n\n", pkgs.At(choice).(*dag.Package).Name)
 
     return choice
-}
-
-func die(strfmt string, v ...interface{}) {
-    fmt.Fprintf(os.Stderr, strfmt, v)
-    os.Exit(1)
 }
 
 
