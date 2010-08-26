@@ -232,8 +232,6 @@ func main() {
         kompiler.SerialCompile(sorted)
     }
 
-    println("still alive")
-
     // test
     if test {
         testMain, testDir := dgrph.MakeMainTest(srcdir)
