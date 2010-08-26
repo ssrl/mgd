@@ -437,7 +437,6 @@ func (t *TestCollector) Visit(node interface{}) (v ast.Visitor) {
     case *ast.FuncDecl:
         fdecl, ok := node.(*ast.FuncDecl)
         if ok {
-            //t.Names.Push(fdecl.Name.Obj.Name)
             t.Names.Push(fdecl.Name.Name)
         }
     default: // nothing to do if not FuncDecl
