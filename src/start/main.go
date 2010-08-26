@@ -85,7 +85,7 @@ func init() {
     getopt.StringOption("-I")
     getopt.StringOption("-tabwidth --tabwidth -tabwidth= --tabwidth=")
     getopt.StringOption("-rew-rule --rew-rule -rew-rule= --rew-rule=")
-    getopt.StringOption("-o -output --output -output= --output=")
+    getopt.StringOption("-o -o= -output --output -output= --output=")
     getopt.StringOption("-b -benchmarks --benchmarks -benchmarks= --benchmarks=")
     getopt.StringOption("-m -match --match -match= --match=")
     getopt.StringOption("-test-bin --test-bin -test-bin= --test-bin=")
@@ -231,6 +231,8 @@ func main() {
     }else{
         kompiler.SerialCompile(sorted)
     }
+
+    println("still alive")
 
     // test
     if test {

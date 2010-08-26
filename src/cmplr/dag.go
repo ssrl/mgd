@@ -104,7 +104,7 @@ func (d Dag) GraphBuilder(includes []string) {
                 /// fmt.Printf("local:  %s \n", dep);
             } else if !d.stdlibDependency(goRoot, dep) {
                 if includes == nil || len(includes) == 0 {
-                    log.Stderrf("[ERROR] Dependency: %s not found\n", dep)
+                    log.Stderrf("[ERROR] Dependency: '%s' not found\n", dep)
                     log.Exit("[ERROR] Did you use actual src-root?\n")
                 }
             }
@@ -437,7 +437,8 @@ func (t *TestCollector) Visit(node interface{}) (v ast.Visitor) {
     case *ast.FuncDecl:
         fdecl, ok := node.(*ast.FuncDecl)
         if ok {
-            t.Names.Push(fdecl.Name.Obj.Name)
+            //t.Names.Push(fdecl.Name.Obj.Name)
+            t.Names.Push(fdecl.Name.Name)
         }
     default: // nothing to do if not FuncDecl
     }
