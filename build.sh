@@ -31,7 +31,7 @@ package=(
 'expvar'
 'flag'
 'fmt'
-'go'
+## 'go' included some invalid go code for testing/this is a quick fix :-)
 'hash'
 'http'
 'image'
