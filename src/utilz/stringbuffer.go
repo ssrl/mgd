@@ -4,6 +4,9 @@
 
 package stringbuffer
 
+// Allocate a byte buffer to build strings from a set of
+// smaller strings, if added if added content exceeds 
+// maximal buffer size, the size of the stringbuffer doubles.
 
 type StringBuffer struct {
     current, max int

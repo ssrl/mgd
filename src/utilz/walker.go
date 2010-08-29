@@ -10,6 +10,13 @@ import (
     "path"
 )
 
+// This package creates a list of strings from a path,
+// where pathnames to all files below path given, is
+// returned as a StringVector. Unwanted directories and
+// files can be filtered out using the two filter functions
+// IncludeDir and IncludeFile.
+
+
 // reassign to filter pathwalk
 var IncludeDir = func(p string) bool { return true }
 var IncludeFile = func(p string) bool { return true }
