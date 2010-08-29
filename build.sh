@@ -31,7 +31,7 @@ package=(
 'expvar'
 'flag'
 'fmt'
-## 'go' included some invalid go code for testing/this is a quick fix :-)
+'go'
 'hash'
 'http'
 'image'
@@ -130,13 +130,15 @@ function recursive_copy {
     for i in $(ls "$1");
     do
         if [ -f "$1/$i" ]; then
-            case $i in *.go)
+            case "$i" in *.go)
                 grep "^package main$" -q "$1/$i" || cp "$1/$i" "$2/$i"
             esac
         fi
 
         if [ -d "$1/$i" ]; then
-            recursive_copy "$1/$i" "$2/$i"
+            if [ ! "$i" == "testdata" ];then
+                recursive_copy "$1/$i" "$2/$i"
+            fi
         fi
     done
 
