@@ -6,8 +6,10 @@ package gopt
 
 /*
 
-Not too happy with the flag package provided
-by the go-team, so this is another version.
+The flag package provided in the go standard
+library will only allow options before regular
+input arguments, which is not ideal. So this
+is another take on the old getopt.
 
 Most notable difference:
 

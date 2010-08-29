@@ -80,14 +80,14 @@ func init() {
     getopt.BoolOption("-f -fmt --fmt")
     getopt.BoolOption("-no-comments --no-comments")
     getopt.BoolOption("-tab --tab")
-    getopt.StringOption("-a -arch --arch -arch= --arch=")
+    getopt.StringOption("-a -a= -arch --arch -arch= --arch=")
     getopt.StringOption("-dot -dot= --dot --dot=")
-    getopt.StringOption("-I")
+    getopt.StringOption("-I -I=")
     getopt.StringOption("-tabwidth --tabwidth -tabwidth= --tabwidth=")
     getopt.StringOption("-rew-rule --rew-rule -rew-rule= --rew-rule=")
     getopt.StringOption("-o -o= -output --output -output= --output=")
-    getopt.StringOption("-b -benchmarks --benchmarks -benchmarks= --benchmarks=")
-    getopt.StringOption("-m -match --match -match= --match=")
+    getopt.StringOption("-b -b= -benchmarks --benchmarks -benchmarks= --benchmarks=")
+    getopt.StringOption("-m -m= -match --match -match= --match=")
     getopt.StringOption("-test-bin --test-bin -test-bin= --test-bin=")
 
     // override IncludeFile to make walker pick up only .go files
@@ -270,7 +270,8 @@ func main() {
 
 // syntax for config files are identical to command line
 // options, i.e., write command line options to the config file 
-// and everything is fine, comments start with a '#' sign.
+// and everything should work, comments start with a '#' sign.
+// config files are either $HOME/.gdrc or $PWD/.gdrc
 func getConfigArgv(where string) (argv []string, ok bool) {
 
     location := os.Getenv(where)
