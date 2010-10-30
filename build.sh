@@ -94,6 +94,7 @@ function clean(){
     rm -rf src/start/main.?
     rm -rf gd
     rm -rf "$HOME/bin/gd"
+    rm -rf "$GOBIN/gd"
 }
 
 function phelp(){
@@ -235,7 +236,13 @@ case "$1" in
           cd "$HERE"
           mv gd "$HOME/bin"
       else
-          echo -e "\n[ERROR] ${HOME}/bin: not a directory\n"
+          if [ -d "$GOBIN" ]; then
+              cd "$HERE"
+              mv gd "$GOBIN"
+          else
+              echo -e "\n[ERROR] ${HOME}/bin: not a directory"
+              echo -e "[ERROR] \$GOBIN: not set\n"
+          fi
       fi
       ;;
 esac
