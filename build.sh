@@ -240,8 +240,8 @@ case "$1" in
               cd "$HERE"
               mv gd "$GOBIN"
           else
-              echo -e "\n[ERROR] ${HOME}/bin: not a directory"
-              echo -e "[ERROR] \$GOBIN: not set\n"
+              echo -e "\n[ERROR] \$HOME/bin: not a directory"
+              echo -e "[ERROR] \$GOBIN   : not set\n"
           fi
       fi
       ;;
