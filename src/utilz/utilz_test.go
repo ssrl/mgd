@@ -111,4 +111,5 @@ func TestWalker(t *testing.T){
         }
         ss.Remove( files.At(i) )
     }
+
 }
