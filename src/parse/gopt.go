@@ -177,8 +177,7 @@ func (g *GetOpt) Parse(argv []string) (args []string) {
 func (g *GetOpt) juxtaOption(opt string) (string, bool) {
 
     var tmpmax string = ""
-    var optlen int = g.options.Len();
-
+    var optlen int = g.options.Len()
 
     for i := 0; i < optlen; i++ {
 
