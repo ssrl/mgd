@@ -4,6 +4,5 @@ syntax: glob
 *.5
 .git*
 gd
-mklib.sh
 example
 tmp-pkgroot-*
