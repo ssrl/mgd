@@ -277,7 +277,7 @@ func (d Dag) MakeMainTest(root string) (*vector.Vector, string) {
     fil.Close()
 
     p := newPackage()
-    p.Name = tmpstub + "/main"
+    p.Name = path.Join(tmpstub, "main")
     p.ShortName = "main"
     p.Files.Push(tmpfile)
 
