@@ -261,7 +261,7 @@ func (c *Compiler) DeletePackages(pkgs *vector.Vector) bool {
             e = os.Remove(pkg.Files.At(y))
             if e != nil {
                 ok = false
-                fmt.Fprintf(os.Stderr, "[ERROR] %s\n", e)
+                log.Printf("[ERROR] %s\n", e)
             }
         }
         if !c.dryrun {
@@ -269,7 +269,7 @@ func (c *Compiler) DeletePackages(pkgs *vector.Vector) bool {
             e = os.Remove(pcompile)
             if e != nil {
                 ok = false
-                fmt.Fprintf(os.Stderr, "[ERROR] %s\n", e)
+                log.Printf("[ERROR] %s\n", e)
             }
         }
     }

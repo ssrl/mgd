@@ -54,8 +54,6 @@ Usage:
 import (
     "strings"
     "container/vector"
-    "fmt"
-    "os"
     "log"
 )
 
@@ -107,7 +105,7 @@ func (g *GetOpt) Get(o string) string {
         log.Exitf("%s: is not set\n", o)
     case 1: // fine do nothing
     default:
-        fmt.Fprintf(os.Stderr, "[WARNING] option %s: has more arguments than 1\n", o)
+        log.Printf("[WARNING] option %s: has more arguments than 1\n", o)
     }
     return sopt.values[0]
 }
