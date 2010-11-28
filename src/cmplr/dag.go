@@ -89,7 +89,7 @@ func (d Dag) addEdge(from, to string) {
 // note that nothing is done in order to check if dependencies
 // are valid if they are not part of the actual source-tree,
 
-func (d Dag) GraphBuilder(includes []string) {
+func (d Dag) GraphBuilder() {
 
     for k, v := range d {
 
@@ -406,7 +406,7 @@ func (p *Package) Visit(node interface{}) (v ast.Visitor) {
     case *ast.BasicLit:
         bl, ok := node.(*ast.BasicLit)
         if ok {
-            stripped := stripQuotes(string(bl.Value))
+            stripped := string(bl.Value[1:len(bl.Value)-1])
             p.dependencies.Add(stripped)
         }
     default: // nothing to do if not BasicLit
@@ -424,11 +424,6 @@ func (t *TestCollector) Visit(node interface{}) (v ast.Visitor) {
     default: // nothing to do if not FuncDecl
     }
     return t
-}
-
-func stripQuotes(s string) string {
-    stripped := s[1:(len(s) - 1)]
-    return stripped
 }
 
 func addSeparatorPath(root string) string {

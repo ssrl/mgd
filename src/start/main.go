@@ -225,7 +225,7 @@ func main() {
     gotRoot() //?
 
     // sort graph based on dependencies
-    dgrph.GraphBuilder(includes)
+    dgrph.GraphBuilder()
     sorted := dgrph.Topsort()
 
     // print packages sorted
