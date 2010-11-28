@@ -5,9 +5,7 @@
 package dag
 
 import (
-    "container/vector"
-    "utilz/stringset"
-    "utilz/stringbuffer"
+    "exec"
     "go/parser"
     "path"
     "go/ast"
@@ -15,6 +13,12 @@ import (
     "fmt"
     "time"
     "log"
+    "strings"
+    "regexp"
+    "container/vector"
+    "utilz/stringset"
+    "utilz/stringbuffer"
+    "utilz/handy"
 )
 
 
@@ -92,7 +96,6 @@ func (d Dag) addEdge(from, to string) {
 func (d Dag) GraphBuilder() {
 
     for k, v := range d {
-
         for dep := range v.dependencies.Iter() {
             if d.localDependency(dep) {
                 d.addEdge(dep, k)
@@ -100,6 +103,81 @@ func (d Dag) GraphBuilder() {
             }
         }
     }
+}
+
+func (d Dag) External(verbose bool) {
+
+    var err os.Error
+    var argv []string
+    var argc int = 2
+    var i int = 0
+
+
+    set := stringset.New()
+
+    for _, v := range d {
+        for dep := range v.dependencies.Iter() {
+            if ! d.localDependency(dep) {
+                set.Add(dep)
+            }
+        }
+    }
+
+    for u := range set.Iter() {
+        if ! seemsExternal( u ) {
+            set.Remove( u )
+        }
+    }
+
+    if verbose {
+        argc++
+    }
+
+    argv = make([]string, argc)
+
+    argv[i], err = exec.LookPath("goinstall")
+    i++
+
+    if err != nil {
+        log.Exitf("[ERROR] %s\n", err)
+    }
+
+    if verbose {
+        argv[i] = "-v=true"
+        i++
+    }
+
+    for u := range set.Iter() {
+        fmt.Printf("goinstall: %s\n", u)
+        argv[i] = u
+        handy.StdExecve(argv, true)
+    }
+
+}
+
+// If import starts with one of these, it seems legal...
+//
+//  bitbucket.org/
+//  github.com/
+//  [^.]+\.googlecode\.com/
+//  launchpad.net/
+func seemsExternal(imprt string) (bool) {
+
+    if strings.HasPrefix(imprt, "bitbucket.org/") {
+        return true
+    }else if strings.HasPrefix(imprt, "github.com/") {
+        return true
+    }else if strings.HasPrefix(imprt, "launchpad.net/") {
+        return true
+    }
+
+    ok, _ := regexp.MatchString("[^.]\\.googlecode\\.com\\/.*", imprt)
+
+    if ok {
+        return true
+    }
+
+    return false
 }
 
 func (d Dag) MakeDotGraph(filename string) {
