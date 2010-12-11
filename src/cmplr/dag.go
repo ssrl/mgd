@@ -7,6 +7,7 @@ package dag
 import (
     "exec"
     "go/parser"
+    "go/token"
     "path"
     "go/ast"
     "os"
@@ -478,7 +479,7 @@ func (p *Package) Ready(local, compiled *stringset.StringSet) bool {
     return true
 }
 
-func (p *Package) Visit(node interface{}) (v ast.Visitor) {
+func (p *Package) Visit(node ast.Node) (v ast.Visitor) {
 
     switch node.(type) {
     case *ast.BasicLit:
@@ -492,7 +493,7 @@ func (p *Package) Visit(node interface{}) (v ast.Visitor) {
     return p
 }
 
-func (t *TestCollector) Visit(node interface{}) (v ast.Visitor) {
+func (t *TestCollector) Visit(node ast.Node) (v ast.Visitor) {
     switch node.(type) {
     case *ast.FuncDecl:
         fdecl, ok := node.(*ast.FuncDecl)
@@ -512,7 +513,7 @@ func addSeparatorPath(root string) string {
 }
 
 func getSyntaxTreeOrDie(file string, mode uint) *ast.File {
-    absSynTree, err := parser.ParseFile(file, nil, mode)
+    absSynTree, err := parser.ParseFile(token.NewFileSet(), file, nil, mode)
     if err != nil {
         log.Exitf("%s\n", err)
     }
