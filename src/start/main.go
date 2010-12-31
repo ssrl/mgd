@@ -16,7 +16,6 @@ import (
     "cmplr/dag"
     "parse/gopt"
     "utilz/handy"
-    "container/vector"
     "utilz/global"
 )
 
@@ -25,7 +24,7 @@ import (
 var getopt *gopt.GetOpt
 
 // list of files to compile
-var files *vector.StringVector
+var files []string
 
 // libraries other than $GOROOT/pkg/PLATFORM
 var includes []string = nil
@@ -253,9 +252,8 @@ func main() {
 
     // print packages sorted
     if global.GetBool("-sort") {
-        for i := 0; i < sorted.Len(); i++ {
-            rpkg, _ := sorted.At(i).(*dag.Package)
-            fmt.Printf("%s\n", rpkg.Name)
+        for i := 0; i < len(sorted); i++ {
+            fmt.Printf("%s\n", sorted[i].Name)
         }
         os.Exit(0)
     }
@@ -263,6 +261,7 @@ func main() {
     // compile
     kompiler := compiler.New(srcdir, includes)
     kompiler.CreateArgv(sorted)
+
     if runtime.GOMAXPROCS(-1) > 1 && ! global.GetBool("-dryrun") {
         kompiler.ParallelCompile(sorted)
     } else {
@@ -342,10 +341,6 @@ func parseArgv(argv []string) (args []string) {
     return args
 }
 
-func findFiles(pathname string) *vector.StringVector {
-    handy.DirOrExit(pathname)
-    return walker.PathWalk(path.Clean(pathname))
-}
 
 func printHelp() {
     var helpMSG string = `
