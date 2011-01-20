@@ -6,7 +6,6 @@ package compiler
 
 import (
     "os"
-    "container/vector"
     "fmt"
     "path"
     "log"
@@ -94,7 +93,7 @@ func (c *Compiler) CreateArgv(pkgs []*dag.Package) {
 
     for y := 0; y < len(pkgs); y++ {
 
-        argv = make([]string, 5+pkgs[y].Files.Len()+(includeLen*2))
+        argv = make([]string, 5 + len(pkgs[y].Files) + (includeLen*2))
         i := 0
         argv[i] = c.executable
         i++
@@ -115,8 +114,8 @@ func (c *Compiler) CreateArgv(pkgs []*dag.Package) {
         argv[i] = path.Join(c.root, pkgs[y].Name) + c.suffix
         i++
 
-        for z := 0; z < pkgs[y].Files.Len(); z++ {
-            argv[i] = pkgs[y].Files.At(z)
+        for z := 0; z < len(pkgs[y].Files); z++ {
+            argv[i] = pkgs[y].Files[z]
             i++
         }
 
@@ -265,8 +264,8 @@ func (c *Compiler) DeletePackages(pkgs []*dag.Package) bool {
 
     for i := 0; i < len(pkgs); i++ {
 
-        for y := 0; y < pkgs[i].Files.Len(); y++ {
-            e = os.Remove(pkgs[i].Files.At(y))
+        for y := 0; y < len(pkgs[i].Files); y++ {
+            e = os.Remove(pkgs[i].Files[y])
             if e != nil {
                 ok = false
                 log.Printf("[ERROR] %s\n", e)
@@ -289,23 +288,23 @@ func (c *Compiler) ForkLink(pkgs []*dag.Package, output string) {
 
     var mainPKG *dag.Package
 
-    gotMain := new(vector.Vector)
+    gotMain := make([]*dag.Package, 0)
 
     for i := 0; i < len(pkgs); i++ {
         if pkgs[i].ShortName == "main" {
-            gotMain.Push(pkgs[i])
+            gotMain = append(gotMain, pkgs[i])
         }
     }
 
-    if gotMain.Len() == 0 {
+    if len(gotMain) == 0 {
         log.Exit("[ERROR] (linking) no main package found\n")
     }
 
-    if gotMain.Len() > 1 {
+    if len(gotMain) > 1 {
         choice := mainChoice(gotMain)
-        mainPKG, _ = gotMain.At(choice).(*dag.Package)
+        mainPKG = gotMain[choice]
     } else {
-        mainPKG, _ = gotMain.Pop().(*dag.Package)
+        mainPKG = gotMain[0]
     }
 
     includeLen := c.extraPkgIncludes()
@@ -351,13 +350,12 @@ func (c *Compiler) ForkLink(pkgs []*dag.Package, output string) {
     }
 }
 
-func mainChoice(pkgs *vector.Vector) int {
+func mainChoice(pkgs []*dag.Package) int {
 
     fmt.Println("\n More than one main package found\n")
 
-    for i := 0; i < pkgs.Len(); i++ {
-        pk, _ := pkgs.At(i).(*dag.Package)
-        fmt.Printf(" type %2d  for: %s\n", i, pk.Name)
+    for i := 0; i < len(pkgs); i++ {
+        fmt.Printf(" type %2d  for: %s\n", i, pkgs[i].Name)
     }
 
     var choice int
@@ -373,11 +371,11 @@ func mainChoice(pkgs *vector.Vector) int {
         log.Exit("failed to read input\n")
     }
 
-    if choice >= pkgs.Len() || choice < 0 {
+    if choice >= len(pkgs) || choice < 0 {
         log.Exitf(" bad choice: %d\n", choice)
     }
 
-    fmt.Printf(" chosen main-package: %s\n\n", pkgs.At(choice).(*dag.Package).Name)
+    fmt.Printf(" chosen main-package: %s\n\n", pkgs[choice].Name)
 
     return choice
 }
