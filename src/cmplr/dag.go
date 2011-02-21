@@ -439,7 +439,7 @@ func (p *Package) DotGraph(sb *stringbuffer.StringBuffer) {
 func (p *Package) UpToDate() bool {
 
     if p.Argv == nil {
-        panic("Missing dag.Package.Argv")
+        log.Fatalf("[ERROR] missing dag.Package.Argv\n")
     }
 
     var e os.Error

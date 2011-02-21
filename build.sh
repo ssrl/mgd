@@ -138,7 +138,7 @@ targets:
   move    : move 'gd' to \$HOME/bin (\$GOBIN fallback)
   install : clean + build + move (DEFAULT)
   cproot  : copy modified (pure go) part of \$GOROOT/src/pkg
-  cporig  : copy original (pure go) part of \$GOROOT/src/pkg
+  stdlib  : copy original (pure go) part of \$GOROOT/src/pkg
 
 EOH
 }
@@ -265,7 +265,7 @@ case "$1" in
       UP_ONE="yes"
       time cproot
       ;;
-      'cporig' | '--cporig' | '-cporig')
+      'stdlib' | '-stdlib' | '--stdlib')
       time cproot
       ;;
       'clean' | 'c' | '-c' | '--clean' | '-clean')

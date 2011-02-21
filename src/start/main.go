@@ -385,7 +385,7 @@ func printHelp() {
 }
 
 func printVersion() {
-    fmt.Println("godag 0.1")
+    fmt.Println("godag 0.2")
 }
 
 func printListing() {
