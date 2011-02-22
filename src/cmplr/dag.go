@@ -263,10 +263,10 @@ func (d Dag) MakeMainTest(root string) ([]*Package, string) {
                 imprtSet.Add(fmt.Sprintf("import \"%s\"\n", v.Name))
                 for i = 0; i < len(collector.Names); i++ {
                     testFunc := collector.Names[i]
-                    if len(testFunc) > 4 && testFunc[0:4] == "Test" {
+                    if len(testFunc) >= 4 && testFunc[0:4] == "Test" {
                         sbTests.Add(fmt.Sprintf("testing.InternalTest{\"%s.%s\", %s.%s },\n",
                             sname, testFunc, sname, testFunc))
-                    } else if len(testFunc) > 9 && testFunc[0:9] == "Benchmark" {
+                    } else if len(testFunc) >= 9 && testFunc[0:9] == "Benchmark" {
                         sbBench.Add(fmt.Sprintf("testing.InternalBenchmark{\"%s.%s\", %s.%s },\n",
                             sname, testFunc, sname, testFunc))
 
@@ -291,10 +291,10 @@ func (d Dag) MakeMainTest(root string) ([]*Package, string) {
                 imprtSet.Add(fmt.Sprintf("import \"%s\"\n", v.Name))
                 for i = 0; i < len(collector.Names); i++ {
                     testFunc := collector.Names[i]
-                    if len(testFunc) > 4 && testFunc[0:4] == "Test" {
+                    if len(testFunc) >= 4 && testFunc[0:4] == "Test" {
                         sbTests.Add(fmt.Sprintf("testing.InternalTest{\"%s.%s\", %s.%s },\n",
                             sname, testFunc, sname, testFunc))
-                    } else if len(testFunc) > 9 && testFunc[0:9] == "Benchmark" {
+                    } else if len(testFunc) >= 9 && testFunc[0:9] == "Benchmark" {
                         sbBench.Add(fmt.Sprintf("testing.InternalBenchmark{\"%s.%s\", %s.%s },\n",
                             sname, testFunc, sname, testFunc))
                     }
