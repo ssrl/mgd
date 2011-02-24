@@ -391,19 +391,19 @@ func CreateTestArgv() []string {
     argv := make([]string, numArgs)
     argv[0] = arg0
     if global.GetString("-benchmarks") != "" {
-        argv[i] = "-benchmarks"
+        argv[i] = "-test.bench"
         i++
         argv[i] = global.GetString("-benchmarks")
         i++
     }
     if global.GetString("-match") != "" {
-        argv[i] = "-match"
+        argv[i] = "-test.run"
         i++
         argv[i] = global.GetString("-match")
         i++
     }
     if global.GetBool("-verbose") {
-        argv[i] = "-v"
+        argv[i] = "-test.v"
     }
     return argv
 }
