@@ -59,7 +59,7 @@ var strs  = []string{
     "-tabwidth",
     "-rew-rule",
     "-output",
-    "-benchmarks",
+    "-bench",
     "-match",
     "-test-bin",
 }
@@ -91,7 +91,7 @@ func init() {
     getopt.StringOption("-tabwidth --tabwidth -tabwidth= --tabwidth=")
     getopt.StringOption("-rew-rule --rew-rule -rew-rule= --rew-rule=")
     getopt.StringOption("-o -o= -output --output -output= --output=")
-    getopt.StringOption("-b -b= -benchmarks --benchmarks -benchmarks= --benchmarks=")
+    getopt.StringOption("-b -b= -bench --bench -bench= --bench=")
     getopt.StringOption("-m -m= -match --match -match= --match=")
     getopt.StringOption("-test-bin --test-bin -test-bin= --test-bin=")
 
@@ -369,7 +369,7 @@ func printHelp() {
   -dot                 create a graphviz dot file
   -I                   import package directories
   -t --test            run all unit-tests
-  -b --benchmarks      pass argument to unit-test
+  -b --bench           pass argument to unit-test
   -m --match           pass argument to unit-test
   -V --verbose         verbose unit-test and goinstall
   --test-bin           name of test-binary (default: gdtest)
@@ -404,7 +404,7 @@ func printListing() {
   -I                   =>   %v
   -dot                 =>   '%s'
   -t --test            =>   %t
-  -b --benchmarks      =>   '%s'
+  -b --bench           =>   '%s'
   -m --match           =>   '%s'
   -V --verbose         =>   %t
   --test-bin           =>   '%s'
@@ -439,7 +439,7 @@ func printListing() {
                includes,
                global.GetString("-dot"),
                global.GetBool("-test"),
-               global.GetString("-benchmarks"),
+               global.GetString("-bench"),
                global.GetString("-match"),
                global.GetBool("-verbose"),
                global.GetString("-test-bin"),
