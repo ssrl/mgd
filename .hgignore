@@ -6,3 +6,5 @@ syntax: glob
 gd
 example
 tmp-pkgroot-*
+testable*
+stdlib*

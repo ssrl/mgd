@@ -17,6 +17,7 @@ import (
     "parse/gopt"
     "utilz/handy"
     "utilz/global"
+    "utilz/timer"
 )
 
 
@@ -44,6 +45,7 @@ var bools = []string{
     "-dryrun",
     "-test",
     "-list",
+    "-time",
     "-verbose",
     "-fmt",
     "-no-comments",
@@ -79,6 +81,7 @@ func init() {
     getopt.BoolOption("-p -print --print")
     getopt.BoolOption("-d -dryrun --dryrun")
     getopt.BoolOption("-t -test --test test")
+    getopt.BoolOption("-T -time --time")
     getopt.BoolOption("-l -list --list")
     getopt.BoolOption("-V -verbose --verbose")
     getopt.BoolOption("-f -fmt --fmt")
@@ -218,7 +221,9 @@ func main() {
     }
 
     handy.DirOrExit(srcdir)
+    timer.Start("pathwalk")
     files = walker.PathWalk(path.Clean(srcdir))
+    timer.Stop("pathwalk")
 
     // gofmt on all files gathered
     if global.GetBool("-fmt") {
@@ -228,7 +233,9 @@ func main() {
 
     // parse the source code, look for dependencies
     dgrph := dag.New()
+    timer.Start("parsing")
     dgrph.Parse(srcdir, files)
+    timer.Stop("parsing")
 
     // print collected dependency info
     if global.GetBool("-print") {
@@ -246,12 +253,16 @@ func main() {
 
     // build all external dependencies
     if global.GetBool("-external") {
+        timer.Start("goinstall")
         dgrph.External()
+        timer.Stop("goinstall")
     }
 
     // sort graph based on dependencies
     dgrph.GraphBuilder()
+    timer.Start("topsort")
     sorted := dgrph.Topsort()
+    timer.Stop("topsort")
 
     // print packages sorted
     if global.GetBool("-sort") {
@@ -262,6 +273,7 @@ func main() {
     }
 
     // compile
+    timer.Start("compiling")
     compiler.Init(srcdir, global.GetString("-arch"), includes)
     compiler.CreateArgv(sorted)
 
@@ -270,9 +282,11 @@ func main() {
     } else {
         compiler.SerialCompile(sorted)
     }
+    timer.Stop("compiling")
 
     // test
     if global.GetBool("-test") {
+        timer.Start("testing")
         os.Setenv("SRCROOT", srcdir)
         testMain, testDir := dgrph.MakeMainTest(srcdir)
         compiler.CreateArgv(testMain)
@@ -299,13 +313,18 @@ func main() {
                 os.Exit(1)
             }
         }
-
+        timer.Stop("testing")
     }
 
     if global.GetString("-output") != "" {
+        timer.Start("linking")
         compiler.ForkLink(global.GetString("-output"), sorted)
+        timer.Stop("linking")
     }
 
+    if global.GetBool("-time") {
+        timer.Print(os.Stdout)
+    }
 }
 
 
@@ -366,6 +385,7 @@ func printHelp() {
   -a --arch            architecture (amd64,arm,386)
   -d --dryrun          print what gd would do (stdout)
   -c --clean           rm *.[a865] from src-directory
+  -T --time            print some timing results
   -dot                 create a graphviz dot file
   -I                   import package directories
   -t --test            run all unit-tests
@@ -401,6 +421,7 @@ func printListing() {
   -a --arch            =>   %v
   -d --dryrun          =>   %t
   -c --clean           =>   %t
+  -T --time            =>   %t
   -I                   =>   %v
   -dot                 =>   '%s'
   -t --test            =>   %t
@@ -436,6 +457,7 @@ func printListing() {
                archRepr,
                global.GetBool("-dryrun"),
                global.GetBool("-clean"),
+               global.GetBool("-time"),
                includes,
                global.GetString("-dot"),
                global.GetBool("-test"),
