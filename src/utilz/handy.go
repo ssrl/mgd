@@ -59,7 +59,7 @@ func StdExecve(argv []string, stopOnTrouble bool) (ok bool) {
 // More or less taken from a pastebin posted on #go-nuts
 // http://pastebin.com/V0CULJWt by yiyus
 // looked kind of handy, so it was placed here :-)
-func Fopen(name, mode string, perms uint32) (file *os.File, err os.Error) {
+func Fopen(name, mode string, perms uint32) (*os.File, os.Error) {
 
     var imode int // int mode
 
