@@ -130,3 +130,28 @@ func DirOrExit(pathname string) {
         log.Fatalf("[ERROR] %s: is not a directory\n", pathname)
     }
 }
+
+// Mkdir if not dir
+
+func DirOrMkdir(pathname string) {
+
+    fileInfo, err := os.Stat(pathname)
+
+    if err == nil && fileInfo.IsDirectory() {
+        return
+    }else{
+        err = os.MkdirAll(pathname, 0777)
+        if err != nil {
+            log.Fatalf("[ERROR] %s\n", err)
+        }
+    }
+}
+
+func IsDir(pathname string) bool {
+    fileInfo, err := os.Stat(pathname)
+    if err != nil || !fileInfo.IsDirectory() {
+        return false
+    }
+    return true
+}
+
