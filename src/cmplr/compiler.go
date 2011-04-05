@@ -355,17 +355,29 @@ func ForkLink(output string, pkgs []*dag.Package, extra []*dag.Package) {
     argv = append(argv, "-o")
     argv = append(argv, output)
 
-    if global.GetBool("-static") {
-        if global.GetBool("-gcc") {
-            argv = append(argv, "-static")
-        } else {
-            argv = append(argv, "-d")
-        }
+    // gcc get's this no matter what...
+    if global.GetBool("-gcc") {
+        argv = append(argv, "-static")
+    } else if global.GetBool("-static") {
+        argv = append(argv, "-d")
     }
 
-    for y := 0; y < len(includes); y++ {
-        argv = append(argv, "-L")
-        argv = append(argv, includes[y])
+    if global.GetBool("-gcc") {
+
+        walker.IncludeFile = func(s string) bool {
+            return strings.HasSuffix(s, ".o")
+        }
+        walker.IncludeDir = func(s string) bool {return true}
+
+        for y := 0; y < len(includes); y++ {
+            argv = append(argv, walker.PathWalk(includes[y])...)
+        }
+
+    } else {
+        for y := 0; y < len(includes); y++ {
+            argv = append(argv, "-L")
+            argv = append(argv, includes[y])
+        }
     }
 
     argv = append(argv, compiled)
@@ -391,11 +403,6 @@ func ForkLink(output string, pkgs []*dag.Package, extra []*dag.Package) {
         if ss.Len() > 0 {
             argv = append(argv, ss.Slice()...)
         }
-    }
-
-    // make is static no matter what the user says :-)
-    if global.GetBool("-gcc") && ! global.GetBool("-static") {
-        argv = append(argv, "-static")
     }
 
     if global.GetBool("-dryrun") {
