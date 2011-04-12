@@ -367,7 +367,7 @@ func ForkLink(output string, pkgs []*dag.Package, extra []*dag.Package) {
         walker.IncludeFile = func(s string) bool {
             return strings.HasSuffix(s, ".o")
         }
-        walker.IncludeDir = func(s string) bool {return true}
+        walker.IncludeDir = func(s string) bool { return true }
 
         for y := 0; y < len(includes); y++ {
             argv = append(argv, walker.PathWalk(includes[y])...)
@@ -393,7 +393,7 @@ func ForkLink(output string, pkgs []*dag.Package, extra []*dag.Package) {
                     ss.Add(filepath.Join(libroot, extra[j].Name) + suffix)
                 }
             }
-        }else{
+        } else {
             for k := 0; k < len(pkgs); k++ {
                 ss.Add(filepath.Join(libroot, pkgs[k].Name) + suffix)
             }
@@ -577,7 +577,7 @@ func FormatFiles(files []string) {
     for y := 0; y < len(files); y++ {
         argv[i] = files[y]
         if !global.GetBool("-dryrun") {
-            say.Printf("gofmt : %s\n", files[y])
+            say.Printf("gofmt: %s\n", files[y])
             _ = handy.StdExecve(argv, true)
         } else {
             fmt.Printf(" %s\n", strings.Join(argv, " "))

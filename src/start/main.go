@@ -134,7 +134,8 @@ func init() {
 
 func gotRoot() {
     if os.Getenv("GOROOT") == "" {
-        log.Fatal("[ERROR] missing GOROOT\n")
+///         log.Fatal("[ERROR] missing GOROOT\n")
+        global.SetBool("-gcc", true)
     }
 }
 
@@ -320,8 +321,8 @@ func main() {
         }
         compiler.SerialCompile(testMain)
         if global.GetBool("-gcc") {
-            compiler.ForkLink(global.GetString("-test-bin"),testMain,sorted)
-        }else{
+            compiler.ForkLink(global.GetString("-test-bin"), testMain, sorted)
+        } else {
             compiler.ForkLink(global.GetString("-test-bin"), testMain, nil)
         }
         compiler.DeletePackages(testMain)
