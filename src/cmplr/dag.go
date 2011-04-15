@@ -317,8 +317,7 @@ func (d Dag) MakeMainTest(root string) ([]*Package, string) {
     sbTotal.Add(sbBench.String())
 
     sbTotal.Add("func main(){\n")
-    sbTotal.Add("testing.Main(regexp.MatchString, tests, benchmarks);\n")
-    sbTotal.Add("testing.RunBenchmarks(regexp.MatchString, benchmarks);\n}\n\n")
+    sbTotal.Add("testing.Main(regexp.MatchString, tests, benchmarks);\n}\n\n")
 
     tmpstub = fmt.Sprintf("tmp%d", time.Seconds())
     tmpdir = fmt.Sprintf("%s%s", addSeparatorPath(root), tmpstub)
