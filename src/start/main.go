@@ -134,8 +134,7 @@ func init() {
 
 func gotRoot() {
     if os.Getenv("GOROOT") == "" {
-///         log.Fatal("[ERROR] missing GOROOT\n")
-        global.SetBool("-gcc", true)
+        log.Fatal("[ERROR] missing GOROOT\n")
     }
 }
 
