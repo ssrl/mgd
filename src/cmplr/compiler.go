@@ -485,12 +485,13 @@ func CreateTestArgv() []string {
 
 func Remove865o(dir string, alsoDir bool) {
 
-    // override IncludeFile to make walker pick up only .[865o] files
+    // override IncludeFile to make walker pick up only .[865o] .vmo files
     walker.IncludeFile = func(s string) bool {
         return strings.HasSuffix(s, ".8") ||
             strings.HasSuffix(s, ".6") ||
             strings.HasSuffix(s, ".5") ||
-            strings.HasSuffix(s, ".o")
+            strings.HasSuffix(s, ".o") ||
+            strings.HasSuffix(s, ".vmo")
     }
 
     handy.DirOrExit(dir)
