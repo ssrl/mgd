@@ -195,6 +195,9 @@ func main() {
     // expand variables in -lib
     global.SetString("-lib", os.ShellExpand(global.GetString("-lib")))
 
+    // expand variables in -output
+    global.SetString("-output", os.ShellExpand(global.GetString("-output")))
+
     // stuff that can be done without $GOROOT
     if global.GetBool("-list") {
         printListing()
