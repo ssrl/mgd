@@ -40,11 +40,36 @@ func Init(srcdir, arch string, include []string) {
         libroot = srcroot
     }
 
-    if global.GetBool("-gcc") {
+    switch global.GetString("-backend") {
+    case "gcc", "gccgo":
         gcc()
-    } else {
+    case "gc":
         gc(arch)
+    case "express":
+        express()
+    default:
+        log.Fatalf("[ERROR] '%s' unknown backend\n",
+            global.GetString("-backend"))
     }
+}
+
+func express() {
+
+    var err os.Error
+
+    pathCompiler, err = exec.LookPath("vmgc")
+
+    if err != nil {
+        log.Fatalf("[ERROR] could not find compiler: %s\n", pathCompiler)
+    }
+
+    pathLinker, err = exec.LookPath("vmld")
+
+    if err != nil {
+        log.Fatalf("[ERROR] could not find linker: %s\n", pathLinker)
+    }
+
+    suffix = ".vmo"
 }
 
 func gc(arch string) {
@@ -126,7 +151,8 @@ func CreateArgv(pkgs []*dag.Package) {
             argv = append(argv, includes[y])
         }
 
-        if global.GetBool("-gcc") {
+        switch global.GetString("-backend") {
+        case "gcc", "gccgo":
             argv = append(argv, "-c")
         }
 
@@ -348,22 +374,26 @@ func ForkLink(output string, pkgs []*dag.Package, extra []*dag.Package) {
 
     argv := make([]string, 0)
     argv = append(argv, pathLinker)
-    if !global.GetBool("-gcc") {
+
+    switch global.GetString("-backend") {
+    case "gc", "express":
         argv = append(argv, "-L")
         argv = append(argv, libroot)
     }
+
     argv = append(argv, "-o")
     argv = append(argv, output)
 
     // gcc get's this no matter what...
-    if global.GetBool("-gcc") {
+    if global.GetString("-backend") == "gcc" ||
+        global.GetString("-backend") == "gccgo" {
         argv = append(argv, "-static")
     } else if global.GetBool("-static") {
         argv = append(argv, "-d")
     }
 
-    if global.GetBool("-gcc") {
-
+    switch global.GetString("-backend") {
+    case "gccgo", "gcc":
         walker.IncludeFile = func(s string) bool {
             return strings.HasSuffix(s, ".o")
         }
@@ -372,8 +402,7 @@ func ForkLink(output string, pkgs []*dag.Package, extra []*dag.Package) {
         for y := 0; y < len(includes); y++ {
             argv = append(argv, walker.PathWalk(includes[y])...)
         }
-
-    } else {
+    case "gc", "express":
         for y := 0; y < len(includes); y++ {
             argv = append(argv, "-L")
             argv = append(argv, includes[y])
@@ -382,7 +411,8 @@ func ForkLink(output string, pkgs []*dag.Package, extra []*dag.Package) {
 
     argv = append(argv, compiled)
 
-    if global.GetBool("-gcc") {
+    if global.GetString("-backend") == "gcc" ||
+        global.GetString("-backend") == "gccgo" {
 
         ss := stringset.New()
 

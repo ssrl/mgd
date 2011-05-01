@@ -392,7 +392,7 @@ func (d Dag) Topsort() []*Package {
     }
 
     if cnt < len(d) {
-        log.Fatal("[ERROR] loop in dependency graph")
+        log.Fatal("[ERROR] loop in dependency graph\n")
     }
 
     return done
