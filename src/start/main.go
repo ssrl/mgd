@@ -133,9 +133,12 @@ func init() {
 
 }
 
+// ignore GOROOT for gccgo and express
 func gotRoot() {
-    if os.Getenv("GOROOT") == "" {
-        log.Fatal("[ERROR] missing GOROOT\n")
+    if global.GetString("-backend") == "gc" {
+        if os.Getenv("GOROOT") == "" {
+            log.Fatal("[ERROR] missing GOROOT\n")
+        }
     }
 }
 
@@ -273,7 +276,7 @@ func main() {
         os.Exit(0)
     }
 
-    gotRoot() //?
+    gotRoot() //? (only matters to gc, gccgo and express ignores it)
 
     // build all external dependencies
     if global.GetBool("-external") {
