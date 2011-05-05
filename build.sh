@@ -150,7 +150,7 @@ EOH
 }
 
 function die(){
-    echo "variable: $1 not set"
+    echo "$1"
     exit 1
 }
 
@@ -160,7 +160,7 @@ function die(){
 # NOTE main packages are also removed, these are used for testing
 # and since too many of these end up in the same name-space, they
 # are all removed here..
-function recursive_copy {
+function recursive_copy(){
 
     mkdir "$2"
 
@@ -185,7 +185,7 @@ function recursive_copy {
 
 # move all go packages up one level, and give them
 # a fitting header based on directory..
-function up_one_level {
+function up_one_level(){
 
     for element in $(ls $1);
     do
@@ -203,7 +203,7 @@ function up_one_level {
     return 1
 }
 
-function cproot {
+function cproot(){
 
     mkdir "$CPROOT";
     echo "cp *.go: \$GOROOT/src/pkg  ->  $CPROOT"
@@ -224,7 +224,7 @@ function cproot {
     exit 0
 }
 
-function testok {
+function testok(){
     cnt=15
     for((i = 0; i < cnt; i++))
     do
@@ -235,7 +235,7 @@ function testok {
 }
 
 # this target does not show up in help message :-)
-function rmstdlib {
+function rmstdlib(){
     for p in "${package[@]}";
     do
         echo "rm -rf ${GOROOT}/pkg/${GOOS}_${GOARCH}/${p}.*"
@@ -244,25 +244,55 @@ function rmstdlib {
 }
 
 # default target clean + build + move
-function triple {
+function triple(){
     clean
     build
     move
 }
 
+# Make sure we have all binaries needed in order to build debian package
+function sanity(){
+    pathfind 'hg'       || die "[ERROR] missing 'hg (mercurial)'"
+    pathfind 'gzip'     || die "[ERROR] missing 'gzip'"
+    pathfind 'md5sum'   || die "[ERROR] missing 'md5sum'"
+    pathfind 'dpkg-deb' || die "[ERROR] missing 'dpkg-deb'"
+    pathfind 'fakeroot' || die "[ERROR] missing 'fakeroot'"
+    # Not too many systems lacking these (coreutils) but still
+    pathfind 'cp'       || die "[ERROR] missing 'cp'"
+    pathfind 'mkdir'    || die "[ERROR] missing 'mkdir'"
+    pathfind 'mv'       || die "[ERROR] missing 'mv'"
+    pathfind 'du'       || die "[ERROR] missing 'du'"
+    pathfind 'chmod'    || die "[ERROR] missing 'chmod'"
+    pathfind 'printf'   || die "[ERROR] missing 'printf'"
+    pathfind 'cut'      || die "[ERROR] missing 'cut'"
+}
+
+# Taken from Debian Developers Reference Chapter 6
+function pathfind(){
+     OLDIFS="$IFS"
+     IFS=:
+     for p in $PATH; do
+         if [ -x "$p/$*" ]; then
+             IFS="$OLDIFS"
+             return 0
+         fi
+     done
+     IFS="$OLDIFS"
+     return 1
+}
+
 # create a debian package of godag
-function debian {
-    echo "TODO create a debian package"
-    # build || 
+function debian() {
+    sanity
     return 0
 }
 
 # main
 {
-[ "$GOROOT" ] || die "GOROOT"
-[ "$GOARCH" ] || die "GOARCH"
-[ "$GOOS" ]   || die "GOOS"
-[ "$GOBIN" ]  || die "GOBIN"
+[ "$GOROOT" ] || die "[ERROR] missing \$GOROOT"
+[ "$GOARCH" ] || die "[ERROR] missing \$GOARCH"
+[ "$GOOS" ]   || die "[ERROR] missing \$GOOS"
+[ "$GOBIN" ]  || die "[ERROR] missing \$GOBIN"
 
 case "$GOARCH" in
     '386')
