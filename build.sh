@@ -145,6 +145,7 @@ targets:
   cproot  : copy modified (pure go) part of \$GOROOT/src/pkg
   stdlib  : copy original (pure go) part of \$GOROOT/src/pkg
   testok  : copy partial stdlib that can be tested without modification
+  debian  : build a debian package of godag
 
 EOH
 }
@@ -264,7 +265,6 @@ function sanity(){
     pathfind 'du'       || die "[ERROR] missing 'du'"
     pathfind 'chmod'    || die "[ERROR] missing 'chmod'"
     pathfind 'printf'   || die "[ERROR] missing 'printf'"
-    pathfind 'cut'      || die "[ERROR] missing 'cut'"
 }
 
 # Taken from Debian Developers Reference Chapter 6
@@ -281,10 +281,81 @@ function pathfind(){
      return 1
 }
 
-# create a debian package of godag
+# create a debian package of godag, not the prettiest function..
 function debian() {
+
+# do you have what it takes to build a deb?
+
     sanity
-    return 0
+
+# NOTE: does not depend on anything yet :-)
+DEBCONTROL="Package: godag
+Version: 0.2
+Section: devel
+Priority: optional
+Architecture: %s
+Depends:
+Suggests: gccgo,golang
+Conflicts:
+Replaces:
+Installed-Size: %d
+Maintainer: Bjarne Holen <bjarneh@ifi.uio.no>
+Description: Golang/Go compiler front-end.
+ Godag automatically builds projects written in golang,
+ by inspecting source-code imports to calculate compile order.
+ Unit-testing, formatting and installation of external 
+ libraries are also automated. The default back-end is gc,
+ other back-ends have partial support: gccgo, express.
+"
+
+DEBCOPYRIGHT="Name: godag
+Maintainer: bjarne holen <bjarneh@ifi.uio.no>
+Source: https://godag.googlecode.com/hg
+
+Files: *
+Copyright: 2011, bjarne holen <bjarneh@ifi.uio.no>
+License: GPL-3
+
+License: GPL-3
+On Debian systems, the complete text of the GNU General Public License
+version 3 can be found in '/usr/share/common-licenses/GPL-3'.
+"
+
+DEBCHANGELOG="godag (0.2.0) devel; urgency=low
+
+    * The actual changelog can be found in changelog...
+
+ -- Bjarne Holen <bjarneh@ifi.uio.no>  Thu, 05 May 2011 14:07:28 -0400
+"
+
+    if [ "$GOARCH" = "386" ]; then
+        DEBARCH="i386"
+    else
+        DEBARCH="$GOARCH"
+    fi
+
+    build
+
+    mkdir -p ./debian/DEBIAN
+    mkdir -p ./debian/usr/bin
+    mkdir -p ./debian/usr/share/man/man1
+    mkdir -p ./debian/usr/share/doc/godag
+    mkdir -p ./debian/etc/bash_completion.d
+
+    mv gd ./debian/usr/bin
+    cp ./util/gd-completion.sh ./debian/etc/bash_completion.d/gd
+    cat ./util/gd.1 | gzip --best - > ./debian/usr/share/man/man1/gd.1.gz
+    cat ./util/gd.1 | gzip --best - > ./debian/usr/share/man/man1/godag.1.gz
+    echo "$DEBCOPYRIGHT" > ./debian/usr/share/doc/godag/copyright
+    hg log | gzip --best - > ./debian/usr/share/doc/godag/changelog.gz
+    echo "$DEBCHANGELOG" | gzip --best - > ./debian/usr/share/doc/godag/changelog.Debian.gz
+    arr=($(du -s ./debian))
+    printf "$DEBCONTROL" "$DEBARCH" "${arr[0]}" > ./debian/DEBIAN/control
+    echo "/etc/bash_completion.d/gd" > ./debian/DEBIAN/conffiles
+    fakeroot dpkg-deb --build ./debian
+    mv debian.deb "godag_0.2-0_$DEBARCH.deb"
+    rm -rf ./debian
+
 }
 
 # main
@@ -352,4 +423,3 @@ case "$1" in
       ;;
 esac
 }
-
