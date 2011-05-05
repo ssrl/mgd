@@ -145,7 +145,7 @@ targets:
   cproot  : copy modified (pure go) part of \$GOROOT/src/pkg
   stdlib  : copy original (pure go) part of \$GOROOT/src/pkg
   testok  : copy partial stdlib that can be tested without modification
-  debian  : build a debian package of godag
+  debian  : build a debian package (godag_0.2-0_${GOARCH}.deb)
 
 EOH
 }
@@ -354,7 +354,7 @@ DEBCHANGELOG="godag (0.2.0) devel; urgency=low
     echo "/etc/bash_completion.d/gd" > ./debian/DEBIAN/conffiles
     fakeroot dpkg-deb --build ./debian
     mv debian.deb "godag_0.2-0_$DEBARCH.deb"
-##     rm -rf ./debian
+    rm -rf ./debian
 
 }
 
