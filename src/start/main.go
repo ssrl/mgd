@@ -278,9 +278,8 @@ func main() {
 
     // build all external dependencies
     if global.GetBool("-external") {
-        timer.Start("goinstall")
         dgrph.External()
-        timer.Stop("goinstall")
+        os.Exit(0)
     }
 
     // sort graph based on dependencies
