@@ -69,7 +69,7 @@ package=(
 
 
 function build(){
-    echo -n "build"
+    echo -n "build "
     cd src/utilz && $COMPILER walker.go || exit 1
     $COMPILER handy.go || exit 1
     $COMPILER stringset.go || exit 1
@@ -82,7 +82,7 @@ function build(){
     $COMPILER -I $IDIR compiler.go || exit 1
     cd $HERE/src/start && $COMPILER -I $IDIR main.go || exit 1
     cd $HERE && $LINKY -o gd -L src src/start/main.? || exit 1
-    echo " ...done"
+    echo "...done"
 }
 
 function clean(){
@@ -354,7 +354,7 @@ DEBCHANGELOG="godag (0.2.0) devel; urgency=low
     echo "/etc/bash_completion.d/gd" > ./debian/DEBIAN/conffiles
     fakeroot dpkg-deb --build ./debian
     mv debian.deb "godag_0.2-0_$DEBARCH.deb"
-    rm -rf ./debian
+##     rm -rf ./debian
 
 }
 
