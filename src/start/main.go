@@ -428,7 +428,6 @@ func printHelp() {
   -c --clean           rm *.[865] from src-directory
   -T --time            print some timing results
   -q --quiet           silent, print only errors
-  -g --gcc             use gccgo to compile/link
   -L --lib             write objects to other dir (!src)
   -M --main            regex to select main package
   -dot                 create a graphviz dot file
