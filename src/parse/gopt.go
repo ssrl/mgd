@@ -167,13 +167,25 @@ func (g *GetOpt) Parse(argv []string) (args []string) {
         } else {
 
             // arguments written next to options
-            start, ok := g.juxtaOption(argv[i])
+            start, ok := g.juxtaStringOption(argv[i])
 
             if ok {
                 stropt := g.getStringOption(start)
                 stropt.addArgument(argv[i][len(start):])
             } else {
-                args = append(args, argv[i])
+
+                boolopts, ok := g.juxtaBoolOption(argv[i])
+
+                if ok {
+
+                    for i := 0; i < len(boolopts); i++ {
+                        boolopt,_ := g.isOption(boolopts[i]).(*BoolOption)
+                        boolopt.setFlag()
+                    }
+
+                }else{
+                    args = append(args, argv[i])
+                }
             }
         }
     }
@@ -181,7 +193,7 @@ func (g *GetOpt) Parse(argv []string) (args []string) {
     return args
 }
 
-func (g *GetOpt) juxtaOption(opt string) (string, bool) {
+func (g *GetOpt) juxtaStringOption(opt string) (string, bool) {
 
     var tmpmax string = ""
 
@@ -204,6 +216,38 @@ func (g *GetOpt) juxtaOption(opt string) (string, bool) {
     }
 
     return "", false
+}
+
+// convert: -abc => -a -b -c
+func (g *GetOpt) juxtaBoolOption(opt string) ([]string, bool) {
+
+    var tmp string
+
+    if ! strings.HasPrefix(opt, "-") {
+        return nil, false
+    }
+
+    bopts := make([]string, 0)
+    couldBe := strings.Split(opt[1:],"", -1)
+
+    for i := 0; i < len(couldBe); i++  {
+
+        tmp = "-" + couldBe[i]
+        opt := g.isOption(tmp)
+
+        if opt != nil {
+            _, ok := opt.(*BoolOption)
+            if ok {
+                bopts = append(bopts, tmp)
+            }else{
+                return nil, false
+            }
+        }else{
+            return nil, false
+        }
+    }
+
+    return bopts, true
 }
 
 func (g *GetOpt) IsSet(o string) bool {
