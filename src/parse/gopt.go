@@ -142,10 +142,7 @@ func (g *GetOpt) GetMultiple(o string) []string {
 
 func (g *GetOpt) Parse(argv []string) (args []string) {
 
-    var count int = 0
-    // args cannot be longer than argv, if no options
-    // are given on the command line it is argv
-    args = make([]string, len(argv))
+    args = make([]string, 0)
 
     for i := 0; i < len(argv); i++ {
 
@@ -176,13 +173,12 @@ func (g *GetOpt) Parse(argv []string) (args []string) {
                 stropt := g.getStringOption(start)
                 stropt.addArgument(argv[i][len(start):])
             } else {
-                args[count] = argv[i]
-                count++
+                args = append(args, argv[i])
             }
         }
     }
 
-    return args[0:count]
+    return args
 }
 
 func (g *GetOpt) juxtaOption(opt string) (string, bool) {
