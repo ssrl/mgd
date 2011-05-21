@@ -19,6 +19,7 @@ _gd(){
     gd_short_explain="-h[--help] -v[--version] -l[--list] -p[--print] -s[--sort] -o[--output] -S[--static] -a[--arch] -d[--dryrun] -c[--clean] -I -t[--test] -b[--bench] -m[--match] -V[--verbose] -f[--fmt] -e[--external] -q[--quiet] -L[--lib] -M[--main] -B[--backend]"
     # short options
     gd_short_opts="-h -v -l -p -s -o -S -a -d -c -I -t -b -m -V -f -q -B"
+    gd_special="clean test"
 
 
     COMPREPLY=()
@@ -37,6 +38,9 @@ _gd(){
             COMPREPLY=( $(compgen -W "${gd_short_explain}" -- "${cur}") )
         fi
         return 0
+    fi
+    if [[ "${cur}" == c* || "${cur}" == t* ]]; then
+        COMPREPLY=( $(compgen -W "${gd_special}" -- "${cur}") )
     fi
     if [[ "${prev}" == -* ]]; then
         case "${prev}" in
