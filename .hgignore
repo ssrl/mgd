@@ -2,6 +2,7 @@ syntax: glob
 *.8
 *.6
 *.5
+*.o
 .git*
 gd
 example
