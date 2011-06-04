@@ -334,7 +334,10 @@ func main() {
         }
         testArgv := compiler.CreateTestArgv()
         if !global.GetBool("-dryrun") {
-            say.Printf("testing  :\n")
+            say.Printf("testing  : ")
+            if global.GetBool("-verbose"){
+                say.Printf("\n")
+            }
             ok = handy.StdExecve(testArgv, false)
             e = os.Remove(global.GetString("-test-bin"))
             if e != nil {

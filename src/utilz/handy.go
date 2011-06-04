@@ -8,7 +8,6 @@ import (
     "os"
     "log"
     "io/ioutil"
-///     "io"
     "regexp"
     "strings"
     "exec"
@@ -21,7 +20,6 @@ func StdExecve(argv []string, stopOnTrouble bool) bool {
 
     var err os.Error
     var cmd *exec.Cmd
-    var stderr []byte
 
     switch len(argv){
     case 0:
@@ -35,13 +33,29 @@ func StdExecve(argv []string, stopOnTrouble bool) bool {
         cmd = exec.Command(argv[0], argv[1:]...)
     }
 
-    stderr, err = cmd.CombinedOutput()
+    // pass-through
+    cmd.Stdout = os.Stdout
+    cmd.Stderr = os.Stderr
+    cmd.Stdin  = os.Stdin
+
+    err = cmd.Start()
 
     if err != nil {
         if stopOnTrouble {
-            log.Fatalf("[ERROR] %s\n%s", err, string(stderr))
+            log.Fatalf("[ERROR] %s\n", err)
         } else {
-            log.Printf("[ERROR] %s\n%s", err, string(stderr))
+            log.Printf("[ERROR] %s\n", err)
+            return false
+        }
+    }
+
+    err = cmd.Wait()
+
+    if err != nil {
+        if stopOnTrouble {
+            log.Fatalf("[ERROR] %s\n", err)
+        } else {
+            log.Printf("[ERROR] %s\n", err)
             return false
         }
     }
