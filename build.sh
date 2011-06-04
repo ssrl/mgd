@@ -291,9 +291,12 @@ function gtriple(){
 # Make sure we have all binaries needed in order to build debian package
 function sanity(){
     if [ -d ".hg" ];then
-        pathfind 'hg'   || die "[ERROR] missing 'hg (mercurial)'"
+        pathfind 'hg'   || die "[ERROR] missing 'hg' (mercurial)"
     else # git
-        pathfind 'git'  || die "[ERROR] missing 'hg (mercurial)'"
+        pathfind 'git'  || die "[ERROR] missing 'hg' (mercurial)"
+    fi
+    if [ "$ONLYGCC" ];then
+        pathfind 'gccgo' || die "[ERROR] missing 'gccgo'"
     fi
     pathfind 'gzip'     || die "[ERROR] missing 'gzip'"
     pathfind 'md5sum'   || die "[ERROR] missing 'md5sum'"

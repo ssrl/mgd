@@ -8,6 +8,7 @@ import (
     "os"
     "log"
     "io/ioutil"
+///     "io"
     "regexp"
     "strings"
     "exec"
@@ -16,42 +17,36 @@ import (
 
 // some utility functions
 
-func StdExecve(argv []string, stopOnTrouble bool) (ok bool) {
+func StdExecve(argv []string, stopOnTrouble bool) bool {
 
     var err os.Error
     var cmd *exec.Cmd
-    var pt int = exec.PassThrough
-    var wmsg *os.Waitmsg
-    ok = true
-    cmd, err = exec.Run(argv[0], argv, os.Environ(), "", pt, pt, pt)
+    var stderr []byte
+
+    switch len(argv){
+    case 0:
+        if stopOnTrouble {
+            log.Fatalf("[ERROR] len(argv) == 0\n")
+        }
+        return false
+    case 1:
+        cmd = exec.Command(argv[0])
+    default:
+        cmd = exec.Command(argv[0], argv[1:]...)
+    }
+
+    stderr, err = cmd.CombinedOutput()
 
     if err != nil {
         if stopOnTrouble {
-            log.Fatalf("[ERROR] %s\n", err)
+            log.Fatalf("[ERROR] %s\n%s", err, string(stderr))
         } else {
-            log.Printf("[ERROR] %s\n", err)
-        }
-        ok = false
-
-    } else {
-
-        wmsg, err = cmd.Wait(0)
-
-        if err != nil || wmsg.WaitStatus.ExitStatus() != 0 {
-
-            if err != nil {
-                log.Printf("[ERROR] %s\n", err)
-            }
-
-            if stopOnTrouble {
-                os.Exit(1)
-            }
-
-            ok = false
+            log.Printf("[ERROR] %s\n%s", err, string(stderr))
+            return false
         }
     }
 
-    return ok
+    return true
 }
 
 
