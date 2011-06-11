@@ -83,7 +83,7 @@ function build(){
     cd $HERE/src/cmplr && $COMPILER -I $IDIR dag.go || exit 1
     $COMPILER -I $IDIR compiler.go || exit 1
     cd $HERE/src/start && $COMPILER -I $IDIR main.go || exit 1
-    cd $HERE && $LINKY -o gd -L src src/start/main.? || exit 1
+    cd $HERE && $LINKY -o mgd -L src src/start/main.? || exit 1
     echo "...done"
 }
 
@@ -100,7 +100,7 @@ function gccbuild(){
     gccgo -I src -c -o src/cmplr/dag.o src/cmplr/dag.go || exit 1
     gccgo -I src -c -o src/cmplr/compiler.o src/cmplr/compiler.go || exit 1
     gccgo -I src -c -o src/start/main.o src/start/main.go || exit 1
-    gccgo -o gd -static src/start/main.o src/parse/gopt.o\
+    gccgo -o mgd -static src/start/main.o src/parse/gopt.o\
         src/utilz/stringset.o src/utilz/handy.o\
         src/utilz/stringbuffer.o src/utilz/walker.o\
         src/cmplr/dag.o src/utilz/say.o\
@@ -126,23 +126,23 @@ function clean(){
     rm -rf src/parse/gopt_test.?
     rm -rf src/parse/option.?
     rm -rf src/start/main.?
-    rm -rf gd
-    rm -rf "$HOME/bin/gd"
-    rm -rf "$GOBIN/gd"
+    rm -rf mgd
+    rm -rf "$HOME/bin/mgd"
+    rm -rf "$GOBIN/mgd"
     echo " ...done"
 }
 
 function move(){
     cd "$HERE"
-    if [ -f "gd" ]; then
+    if [ -f "mgd" ]; then
         echo -n "move"
         if [ -d "${HOME}/bin" ]; then
             cd "$HERE"
-            mv gd "$HOME/bin"
+            mv mgd "$HOME/bin"
         else
             if [ -d "$GOBIN" ]; then
                 cd "$HERE"
-                mv gd "$GOBIN"
+                mv mgd "$GOBIN"
             else
                 echo -e "\n[ERROR] \$HOME/bin: not a directory"
                 echo -e "[ERROR] \$GOBIN   : not set\n"
@@ -150,7 +150,7 @@ function move(){
         fi
         echo "  ...done"
     else
-        echo "'gd' not found, nothing to move"
+        echo "'mgd' not found, nothing to move"
         exit 1
     fi
 }
@@ -163,10 +163,10 @@ build.sh - utility script for godag
 targets:
 
   help    : print this menu and exit
-  clean   : rm *.[865a] from src + rm gd \$HOME/bin/gd \$GOBIN/gd
+  clean   : rm *.[865a] from src + rm mgd \$HOME/bin/mgd \$GOBIN/mgd
   build   : compile source code in ./src
   gbuild  : compile source code in ./src using gccgo
-  move    : move 'gd' to \$HOME/bin (\$GOBIN fallback)
+  move    : move 'mgd' to \$HOME/bin (\$GOBIN fallback)
   install : clean + build + move (DEFAULT)
   ginstall: clean + gbuild + move 
   cproot  : copy modified (pure go) part of \$GOROOT/src/pkg
@@ -392,7 +392,7 @@ DEBCHANGELOG="godag (0.2.0) devel; urgency=low
 
     chmod -R 755 ./debian
 
-    mv gd ./debian/usr/bin
+    mv mgd ./debian/usr/bin
     cp ./util/gd-completion.sh ./debian/etc/bash_completion.d/gd
     cat ./util/gd.1 | gzip --best - > ./debian/usr/share/man/man1/gd.1.gz
     cat ./util/gd.1 | gzip --best - > ./debian/usr/share/man/man1/godag.1.gz
