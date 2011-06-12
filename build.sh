@@ -417,9 +417,9 @@ DEBCHANGELOG="godag (0.2.0) devel; urgency=low
 function gcsanity(){
 
 [ "$GOROOT" ] || die "[ERROR] missing \$GOROOT"
-[ "$GOARCH" ] || die "[ERROR] missing \$GOARCH"
-[ "$GOOS" ]   || die "[ERROR] missing \$GOOS"
-[ "$GOBIN" ]  || die "[ERROR] missing \$GOBIN"
+[ "$GOARCH" ] || die "[ERROR] missing \$GOARCH, You must export GOARCH=\"`ls $GOROOT/pkg/ | cut -d '_' -f 2`\""
+[ "$GOOS" ]   || die "[ERROR] missing \$GOOS, You must export GOOS=\"`ls $GOROOT/pkg/ | cut -d '_' -f 1`\""
+[ "$GOBIN" ]  || die "[ERROR] missing \$GOBIN, You must export GOBIN="$GOROOT/bin""
 
 case "$GOARCH" in
     '386')
