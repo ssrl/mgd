@@ -126,7 +126,12 @@ func init() {
         global.SetString(skey, "")
     }
 
-    global.SetString("-test-bin", "gdtest")
+    if os.Getenv("GOOS") == "windows" {
+        global.SetString("-test-bin", "gdtest.exe")
+    } else {
+        global.SetString("-test-bin", "gdtest")
+    }
+
     global.SetString("-backend", "gc")
     global.SetString("-I", "")
 
@@ -379,8 +384,8 @@ func parseArgv(argv []string) (args []string) {
     if getopt.IsSet("-test") || getopt.IsSet("-fmt") {
         // override IncludeFile to make walker pick _test.go files
         walker.IncludeFile = func(s string) bool {
-            return strings.HasSuffix(s, ".go") &&
-                  !strings.HasPrefix(filepath.Base(s), "_")
+            return strings.HasSuffix(s, ".go") // &&
+                  // !strings.HasPrefix(filepath.Base(s), "_")
         }
     }
 
