@@ -133,6 +133,7 @@ func init() {
     }
 
     global.SetString("-backend", "gc")
+    global.SetString("-L", "build")
     global.SetString("-I", "")
 
 }
