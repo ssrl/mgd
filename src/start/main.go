@@ -133,7 +133,7 @@ func init() {
     }
 
     global.SetString("-backend", "gc")
-    global.SetString("-L", "build")
+    global.SetString("-lib", "build")
     global.SetString("-I", "")
 
 }
@@ -235,12 +235,13 @@ func main() {
         if e != nil {
             cwd = os.Getenv("PWD")
         }
-        possibleSrc := filepath.Join(cwd, "src")
+        possibleSrc := cwd
         _, e = os.Stat(possibleSrc)
+        srcdir, e = os.Getwd()
         if e != nil {
             fmt.Printf("usage: gd [OPTIONS] src-directory\n")
             os.Exit(1)
-        }
+        }    
     }
 
     if global.GetBool("-quiet") {
