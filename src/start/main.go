@@ -32,7 +32,7 @@ var files []string
 var includes []string = nil
 
 // source root
-var srcdir string = "src"
+var srcdir string = "."
 
 
 // keys for the bool options
